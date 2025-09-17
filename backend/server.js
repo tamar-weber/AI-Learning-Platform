@@ -64,8 +64,9 @@ app.post('/api/generate-lesson', async (req, res) => {
         console.log(`🤖 שולח ל-AI: prompt='${prompt}', category='${categoryName}', subCategory='${subCategoryName}'`);
         const lesson = await generateLesson(prompt, categoryName, subCategoryName);
         
+
         try {
-            await axios.post(`http://localhost:${PORT}/api/add-to-history`, {
+            await axios.post(`http://localhost:${PORT}/api/history/add-to-history`, {
                 user_id,
                 prompt,
                 category: categoryName,

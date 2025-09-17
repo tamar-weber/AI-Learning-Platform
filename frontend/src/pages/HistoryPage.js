@@ -1,3 +1,4 @@
+// src/pages/HistoryPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -6,11 +7,11 @@ const API_URL = 'http://localhost:8000/api';
 
 function HistoryPage({ currentUser }) {
     const [history, setHistory] = useState([]);
-    const [targetUser, setTargetUser] = useState(null);
+    const [user, setuser] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    
-    const { userId } = useParams(); 
+
+    const { userId } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,24 +24,11 @@ function HistoryPage({ currentUser }) {
 
         const fetchHistory = async () => {
             try {
-                const historyPromise = axios.get(`${API_URL}/history/user/${targetUserId}`);
-                
-                let userPromise = null;
-                if (userId && currentUser?.role === 'admin') {
-                    userPromise = axios.get(`${API_URL}/users`);
-                }
+                // ✅ לוג של ה־userId שנשלח לשרת
+                console.log("userId שנשלח:", targetUserId);
 
-                const [historyResponse, usersResponse] = await Promise.all([
-                    historyPromise,
-                    userPromise
-                ]);
-
-                setHistory(historyResponse.data);
-
-                if (usersResponse) {
-                    const foundUser = usersResponse.data.find(u => u._id === userId);
-                    setTargetUser(foundUser);
-                }
+                const response = await axios.get(`${API_URL}/history/user/${targetUserId}`);
+                setHistory(response.data);
 
             } catch (err) {
                 console.error("שגיאה בטעינת היסטוריה:", err);
@@ -49,25 +37,41 @@ function HistoryPage({ currentUser }) {
                 setIsLoading(false);
             }
         };
+        const fetchUser = async () => {
+            try {
 
+                const response = await axios.get(`${API_URL}/admin/user/${userId}`);
+                setuser(response.data);
+
+            } catch (err) {
+                console.error("שגיאה בקבלת משתמש:", err);
+                setError('לא ניתן היה לטעון את היסטוריית הלמידה.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
         fetchHistory();
+        if (userId && currentUser?.role === 'admin') {
+            fetchUser()
+        }
+
     }, [userId, currentUser, navigate]);
 
     if (isLoading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>טוען היסטוריה...</div>;
-    if (error) return <div style={{ textAlign: 'center', color: 'red' }}>{error}</div>;
+    // if (error) return <div style={{ textAlign: 'center', color: 'red' }}>{error}</div>;
 
-    const pageTitle = targetUser 
-        ? `היסטוריית הלמידה של ${targetUser.name}`
+    const pageTitle = userId && currentUser?.role === 'admin'
+        ? `היסטוריית הלמידה של משתמש ${user.name}`
         : 'היסטוריית הלמידה שלי';
 
     return (
         <div style={{ maxWidth: '900px', margin: 'auto', padding: '20px' }}>
             <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>{pageTitle}</h1>
-            
+
             {history.length === 0 ? (
                 <p style={{ textAlign: 'center', fontSize: '18px' }}>לא נמצאה היסטוריית למידה.</p>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', direction: 'rtl' }}>
                     {history.map(item => (
                         <div key={item._id} style={{ border: '1px solid #ddd', borderRadius: '10px', padding: '20px' }}>
                             <p><strong>השאלה שנשאלה:</strong> {item.prompt}</p>
@@ -78,7 +82,9 @@ function HistoryPage({ currentUser }) {
                                     {item.response}
                                 </div>
                             </details>
-                            <small style={{ color: '#777' }}>נשאל בתאריך: {new Date(item.createdAt).toLocaleString('he-IL')}</small>
+                            <small style={{ color: '#777' }}>
+                                נשאל בתאריך: {new Date(item.createdAt).toLocaleString('he-IL')}
+                            </small>
                         </div>
                     ))}
                 </div>

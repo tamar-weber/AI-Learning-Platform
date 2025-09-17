@@ -143,7 +143,8 @@ function RegisterPage() {
             alignItems: 'center',
             minHeight: '90vh',
             backgroundColor: '#f8f9fa',
-            padding: '20px'
+            padding: '20px',
+            direction: 'rtl'
         }}>
             <div style={{
                 backgroundColor: 'white',
@@ -196,7 +197,8 @@ function RegisterPage() {
                                 padding: '15px', 
                                 fontSize: '16px', 
                                 border: errors.phone ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
+                                borderRadius: '8px',
+                                direction: 'rtl'
                             }}
                         />
                         {errors.phone && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.phone}</span>}

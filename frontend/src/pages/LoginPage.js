@@ -101,7 +101,8 @@ function LoginPage() {
             alignItems: 'center',
             minHeight: '90vh',
             backgroundColor: '#f8f9fa',
-            padding: '20px'
+            padding: '20px',
+            direction: 'rtl'
         }}>
             <div style={{
                 backgroundColor: 'white',
@@ -130,7 +131,7 @@ function LoginPage() {
                             onChange={handleChange}
                             placeholder="שם מלא"
                             style={{ 
-                                width: '100%',
+                                width: '93%',
                                 padding: '15px', 
                                 fontSize: '16px', 
                                 border: errors.name ? '2px solid #e74c3c' : '2px solid #ddd', 
@@ -149,7 +150,7 @@ function LoginPage() {
                             placeholder="תעודת זהות (9 ספרות)"
                             maxLength="9"
                             style={{ 
-                                width: '100%',
+                                width: '93%',
                                 padding: '15px', 
                                 fontSize: '16px', 
                                 border: errors.idNumber ? '2px solid #e74c3c' : '2px solid #ddd', 

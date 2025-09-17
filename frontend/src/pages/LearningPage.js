@@ -80,14 +80,14 @@ function LearningPage({ currentUser, onLogout }) {
 
     return (
         <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' ,direction: 'rtl'}}>
                 <h2>שלום, {currentUser.name}!</h2>
-                <button onClick={onLogout} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer' }}>התנתק</button>
             </div>
             
             <h1 style={{ textAlign: 'center' }}>📝 יצירת שיעור חדש</h1>
             
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#f9f9f9', padding: '25px', borderRadius: '10px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#f9f9f9', padding: '25px', borderRadius: '10px',
+            direction: 'rtl' }}>
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>קטגוריה:</label>
                     <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} style={{ width: '100%', padding: '12px', fontSize: '16px' }}>
@@ -122,7 +122,7 @@ function LearningPage({ currentUser, onLogout }) {
                 
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>מה תרצה ללמוד היום?</label>
-                    <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="לדוגמה: למד אותי על חורים שחורים" rows="4" style={{ width: '100%', padding: '12px', fontSize: '16px' }}/>
+                    <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="לדוגמה: למד אותי על חורים שחורים" rows="4" style={{ width: '96%', padding: '12px', fontSize: '16px' }}/>
                 </div>
 
                 <button type="submit" disabled={isLoading} style={{ padding: '15px', fontSize: '18px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none' }}>

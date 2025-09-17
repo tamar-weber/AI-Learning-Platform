@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
+const User = require("../models/User");
 
 // דמו משתמשים + prompts
 let users = [
@@ -28,11 +30,27 @@ let allPrompts = [
 ];
 
 
-router.get("/users", (req, res) => {
-    res.json(users);
+router.get("/users",async (req, res) => {
+    try {
+
+        users = await User.find();
+        res.json(users);
+    } catch (error) {
+        res.json(error);
+    }
+    
 });
 
-
+router.get("/user/:userId",async (req, res) => {
+    try {
+        const { userId } = req.params;
+       const user = await User.findOne({ _id: new mongoose.Types.ObjectId(userId) });
+        res.json(user);
+    } catch (error) {
+        res.json(error);
+    }
+    
+});
 router.get("/all-prompts", (req, res) => {
     res.json(allPrompts);
 });

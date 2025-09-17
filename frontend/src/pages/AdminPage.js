@@ -13,7 +13,7 @@ function AdminPage({ currentUser }) {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get(`${API_URL}/users`);
+                const response = await axios.get(`${API_URL}/admin/users`);
                 setUsers(response.data);
             } catch (err) {
                 console.error("שגיאה בטעינת משתמשים:", err);
@@ -37,7 +37,7 @@ function AdminPage({ currentUser }) {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {users.map(user => (
-                        <div key={user._id} style={{ border: '1px solid #ddd', borderRadius: '10px', padding: '15px' }}>
+                        <div key={user._id} style={{ border: '1px solid #ddd', borderRadius: '10px', padding: '15px' ,direction: 'rtl'}}>
                             <p><strong>שם:</strong> {user.name}</p>
                             <p><strong>מייל:</strong> {user.email}</p>
                             <p><strong>טלפון:</strong> {user.phone}</p>
