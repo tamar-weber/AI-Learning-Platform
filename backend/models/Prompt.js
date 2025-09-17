@@ -6,4 +6,5 @@ const PromptSchema = new mongoose.Schema({
     sub_category: { type: String },
     response: { type: String, required: true }
 }, { timestamps: true });
+
 module.exports = mongoose.model('Prompt', PromptSchema);

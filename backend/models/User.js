@@ -6,4 +6,5 @@ const UserSchema = new mongoose.Schema({
     idNumber: { type: String, required: true, unique: true },
     role: { type: String, default: 'student' }
 }, { timestamps: true });
+
 module.exports = mongoose.model('User', UserSchema);
