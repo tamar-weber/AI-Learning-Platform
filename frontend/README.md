@@ -66,5 +66,3 @@ Project Structure: Feature-based with pages, components, and API helpers
 
 This frontend was designed to integrate seamlessly with the backend (Node.js + Express + PostgreSQL) of the AI Learning Platform.
 
-yaml
-Copy code
