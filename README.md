@@ -45,7 +45,7 @@ Frontend (.env.local)
 REACT_APP_API_URL=http://localhost:8000
 
 
-🌟 Features
+### 🌟 Features
 
 👤 User Management – Registration & login with JWT
 
@@ -59,7 +59,7 @@ REACT_APP_API_URL=http://localhost:8000
 
 ⚡ Validation & Error Handling – Clean and consistent API responses
 
-🛠 Tech Stack
+ ### 🛠 Tech Stack
 
 Frontend: React 18, React Router, Axios
 
@@ -109,7 +109,7 @@ ai-learning-platform/
 ├── .gitignore
 └── README.md
 
-🧪 Example Usage
+### 🧪 Example Usage
 
 User registers and selects a category → subcategory (e.g., Science → Space)
 
@@ -119,7 +119,7 @@ System saves prompt, queries AI, and returns a structured lesson
 
 User can revisit learning history anytime in the dashboard
 
-👩‍💻 Default Admin Access
+### 👩‍💻 Default Admin Access
 
 Name: תמר המנהלת
 
@@ -127,18 +127,22 @@ ID Number: 111111111
 
 Use these credentials to log in to the Admin Dashboard.
 
-🔧 Development Scripts
- Backend
- cd backend
+### 🔧 Development Scripts
+
+#### Backend
+```bash
+cd backend
 npm run dev        # Start in dev mode
 npm run build      # Build for production
 npm test           # Run tests
 
-Frontend
+
+### Frontend
 cd frontend
 npm start          # Start dev server
 npm run build      # Build for production
 npm test           # Run tests
+
 
 🚀 Future Improvements
 
