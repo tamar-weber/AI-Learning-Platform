@@ -1,20 +1,17 @@
 // backend/setAdmin.js
 require('dotenv').config();
 const mongoose = require('mongoose');
-
-// התאימי את הנתיב אם המודל בנתיב שונה
+const connectDB = require('./config/db');
 const User = require('./models/User');
 
 async function run() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await connectDB();
     console.log('✅ Connected to MongoDB');
 
-    // ניתן להעביר שם ותעודת זהות כפרמטרים
     const nameArg = process.argv[2] || 'תמר המנהלת';
     const idNumberArg = process.argv[3] || '111111111';
 
-    // חפש לפי תעודת זהות או שם
     let user = await User.findOne({ idNumber: idNumberArg }) || await User.findOne({ name: nameArg });
 
     if (user) {
@@ -22,7 +19,6 @@ async function run() {
       await user.save();
       console.log('✅ עדכון משתמש קיים ל־admin:', user);
     } else {
-      // שדות phone & email דרושים במודל שלך — מלאי ערכים סבירים
       user = new User({
         name: nameArg,
         idNumber: idNumberArg,

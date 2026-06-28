@@ -1,5 +1,8 @@
-const mongoose = require('mongoose');
 
+const dns = require('dns');
+dns.setServers(['8.8.8.8']);
+
+const mongoose = require('mongoose');
 const connectDB = async () => {
     try {
         // חיבור ל־MongoDB מה־.env (שדה MONGODB_URI)
@@ -11,8 +14,7 @@ const connectDB = async () => {
 
         console.log(`🗄️ MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`❌ Error connecting to MongoDB: ${error.message}`);
-        process.exit(1); // סיום התהליך אם נכשל
+        console.error(error); process.exit(1); // סיום התהליך אם נכשל
     }
 };
 
