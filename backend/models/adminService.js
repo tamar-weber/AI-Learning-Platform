@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const User = require('../models/User');
-const Prompt = require('../models/Prompt');
+const User = require('../middleware/User');
+const Prompt = require('../middleware/Prompt');
 const AppError = require('../utils/appError');
 
 function isValidObjectId(value) {

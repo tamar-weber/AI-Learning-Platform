@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const historyService = require('../services/historyService');
+const historyService = require('../models/historyService');
 
 router.get('/user/:userId', async (req, res, next) => {
     try {

@@ -1,6 +1,6 @@
-const { generateLesson } = require('../services/aiService');
-const { categories, subCategories } = require('../services/categoryService');
-const historyService = require('../services/historyService');
+const { generateLesson } = require('../models/aiService');
+const { categories, subCategories } = require('../models/categoryService');
+const historyService = require('../models/historyService');
 const AppError = require('../utils/appError');
 
 function resolveCategoryNames(body) {

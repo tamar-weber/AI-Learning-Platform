@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const History = require('../models/History');
+const History = require('../middleware/History');
 const AppError = require('../utils/appError');
 
 function resolveObjectId(value) {

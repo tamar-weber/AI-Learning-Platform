@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../middleware/User');
 const AppError = require('../utils/appError');
 
 function validateRequiredFields(data, requiredFields) {

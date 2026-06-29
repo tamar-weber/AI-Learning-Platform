@@ -3,6 +3,7 @@
   margin: auto;
   padding: 20px;
   font-family: Arial, sans-serif;
+  direction: rtl;
 }
 
 .learning-header {
@@ -71,6 +72,7 @@
 .learning-loading {
   text-align: center;
   font-size: 18px;
+  direction: rtl;
 }
 
 .learning-result {

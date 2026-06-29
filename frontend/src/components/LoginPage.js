@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import api from '../api/api';
 import '../styles/loginPage.css';
 import { useAuth } from '../context/AuthContext';
 
