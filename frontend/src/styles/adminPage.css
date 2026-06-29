@@ -1,0 +1,37 @@
+.admin-page {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.admin-title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  direction: rtl;
+}
+
+.admin-empty {
+  text-align: center;
+  font-size: 18px;
+}
+
+.admin-button {
+  padding: 8px 15px;
+  border-radius: 5px;
+  border: none;
+  background-color: #3498db;
+  color: #fff;
+  cursor: pointer;
+}

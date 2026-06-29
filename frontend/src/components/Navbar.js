@@ -1,86 +1,46 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import '../styles/navbar.css';
+import { useAuth } from '../context/AuthContext';
 
-function Navbar({ currentUser, setCurrentUser }) {
+function Navbar({ currentUser }) {
     const navigate = useNavigate();
+    const { logout } = useAuth();
+    const isAdmin = currentUser?.role === 'admin';
 
     const handleLogout = () => {
-        // ניקוי המשתמש מה-state ומה-localStorage
-        setCurrentUser(null);
-        localStorage.removeItem('currentUser');
-        // העברה לעמוד הבית
-        navigate('/');
+        logout();
+        navigate('/', { replace: true });
     };
 
-    const linkStyle = {
-        color: '#ecf0f1',
-        textDecoration: 'none',
-        padding: '10px 15px',
-        borderRadius: '5px',
-        transition: 'background-color 0.3s'
-    };
-
-    const activeLinkStyle = {
-        backgroundColor: '#2980b9'
-    };
+    const navItems = [
+        { to: '/learning', label: 'צור שיעור', show: Boolean(currentUser) },
+        { to: '/history', label: 'היסטוריה', show: Boolean(currentUser) },
+        { to: '/admin', label: 'ניהול', show: isAdmin }
+    ];
 
     return (
-        <nav style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '15px 30px',
-            backgroundColor: '#34495e',
-            color: 'white',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-        }}>
-            {/* צד ימין - לוגו וקישורים */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <NavLink to={currentUser ? "/learning" : "/"} style={{...linkStyle, fontSize: '1.5rem', fontWeight: 'bold' }}>
+        <nav className="navbar">
+            <div className="navbar-left">
+                <NavLink to={currentUser ? '/learning' : '/'} className={({ isActive }) => `navbar-link navbar-brand ${isActive ? 'active' : ''}`}>
                     🎓 AI-Learn
                 </NavLink>
-                {currentUser && (
-                    <>
-                        <NavLink 
-                            to="/learning" 
-                            style={({ isActive }) => ({ ...linkStyle, ...(isActive ? activeLinkStyle : {}) })}
-                        >
-                            צור שיעור
-                        </NavLink>
-                        <NavLink 
-                            to="/history" 
-                            style={({ isActive }) => ({ ...linkStyle, ...(isActive ? activeLinkStyle : {}) })}
-                        >
-                            היסטוריה
-                        </NavLink>
-                        {/* קישור ניהול - רק למנהלים */}
-                        {currentUser.role === 'admin' && (
-                            <NavLink 
-                                to="/admin" 
-                                style={({ isActive }) => ({ ...linkStyle, ...(isActive ? activeLinkStyle : {}) })}
-                            >
-                                ניהול
-                            </NavLink>
-                        )}
-                    </>
-                )}
+
+                {navItems.filter((item) => item.show).map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}
+                    >
+                        {item.label}
+                    </NavLink>
+                ))}
             </div>
 
-            {/* צד שמאל - פרטי משתמש והתנתקות */}
             {currentUser && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <span style={{ color: '#bdc3c7' }}>שלום, {currentUser.name}</span>
-                    <button 
-                        onClick={handleLogout}
-                        style={{
-                            backgroundColor: '#e74c3c',
-                            color: 'white',
-                            border: 'none',
-                            padding: '8px 15px',
-                            borderRadius: '5px',
-                            cursor: 'pointer'
-                        }}
-                    >
+                <div className="navbar-right">
+                    <span className="navbar-user-name">שלום, {currentUser.name}</span>
+                    <button type="button" className="navbar-logout-button" onClick={handleLogout}>
                         התנתק
                     </button>
                 </div>
