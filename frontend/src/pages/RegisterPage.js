@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-
-const API_URL = 'http://localhost:8000/api';
+import api from '../utils/api';
+import '../styles/registerPage.css';
+import { useAuth } from '../context/AuthContext';
 
 function RegisterPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -108,17 +108,17 @@ function RegisterPage() {
         try {
             console.log('🔄 מנסה לשלוח בקשה לשרת...', formData);
             
-            const response = await axios.post(`${API_URL}/register`, formData);
+            const response = await api.post('/register', formData);
             
             console.log('✅ הרשמה הצליחה:', response.data);
             setSuccess(`שלום ${response.data.name}! נרשמת בהצלחה למערכת!`);
             
             // שמירת פרטי המשתמש ב-localStorage
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
+            login(response.data);
             
             // מעבר לעמוד הלמידה אחרי 2 שניות
             setTimeout(() => {
-                window.location.href = '/learning';
+                navigate('/learning', { replace: true });
             }, 2000);
 
         } catch (err) {
@@ -137,178 +137,71 @@ function RegisterPage() {
     };
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            minHeight: '90vh',
-            backgroundColor: '#f8f9fa',
-            padding: '20px',
-            direction: 'rtl'
-        }}>
-            <div style={{
-                backgroundColor: 'white',
-                padding: '40px',
-                borderRadius: '15px',
-                boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
-                width: '100%',
-                maxWidth: '500px'
-            }}>
-                <h2 style={{ 
-                    textAlign: 'center', 
-                    color: '#2c3e50', 
-                    marginBottom: '30px',
-                    fontSize: '2rem'
-                }}>
-                    🎓 הצטרפות לפלטפורמה
-                </h2>
-                
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    
-                    {/* שם מלא */}
+        <div className="register-page">
+            <div className="register-card">
+                <h2 className="register-title">🎓 הצטרפות לפלטפורמה</h2>
+
+                <form onSubmit={handleSubmit} className="register-form">
                     <div>
-                        <input 
+                        <input
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="שם מלא"
-                            style={{ 
-                                width: '100%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.name ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
-                            }}
+                            className={`register-input ${errors.name ? 'error' : ''}`}
                         />
-                        {errors.name && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.name}</span>}
+                        {errors.name && <span className="register-error-text">❌ {errors.name}</span>}
                     </div>
 
-                    {/* טלפון */}
                     <div>
-                        <input 
+                        <input
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
                             placeholder="מספר טלפון (050-1234567)"
-                            style={{ 
-                                width: '100%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.phone ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px',
-                                direction: 'rtl'
-                            }}
+                            className={`register-input phone ${errors.phone ? 'error' : ''}`}
                         />
-                        {errors.phone && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.phone}</span>}
+                        {errors.phone && <span className="register-error-text">❌ {errors.phone}</span>}
                     </div>
 
-                    {/* אימייל */}
                     <div>
-                        <input 
+                        <input
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
                             placeholder="כתובת אימייל"
-                            style={{ 
-                                width: '100%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.email ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
-                            }}
+                            className={`register-input ${errors.email ? 'error' : ''}`}
                         />
-                        {errors.email && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.email}</span>}
+                        {errors.email && <span className="register-error-text">❌ {errors.email}</span>}
                     </div>
 
-                    {/* תעודת זהות */}
                     <div>
-                        <input 
+                        <input
                             type="text"
                             name="idNumber"
                             value={formData.idNumber}
                             onChange={handleChange}
                             placeholder="תעודת זהות (9 ספרות)"
                             maxLength="9"
-                            style={{ 
-                                width: '100%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.idNumber ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
-                            }}
+                            className={`register-input ${errors.idNumber ? 'error' : ''}`}
                         />
-                        {errors.idNumber && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.idNumber}</span>}
-                        <small style={{ color: '#7f8c8d', fontSize: '12px' }}>
-                            נכתבו {formData.idNumber.length}/9 ספרות
-                        </small>
+                        {errors.idNumber && <span className="register-error-text">❌ {errors.idNumber}</span>}
+                        <small className="register-hint">נכתבו {formData.idNumber.length}/9 ספרות</small>
                     </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={isLoading}
-                        style={{ 
-                            padding: '15px', 
-                            fontSize: '18px', 
-                            cursor: isLoading ? 'not-allowed' : 'pointer', 
-                            backgroundColor: isLoading ? '#95a5a6' : '#27ae60', 
-                            color: 'white', 
-                            border: 'none', 
-                            borderRadius: '8px'
-                        }}
-                    >
+                    <button type="submit" disabled={isLoading} className="register-submit-button">
                         {isLoading ? '📝 רושם אותך...' : '🚀 הצטרף עכשיו!'}
                     </button>
                 </form>
 
-                {/* הודעות שגיאה כלליות */}
-                {errors.general && (
-                    <div style={{ 
-                        color: '#e74c3c', 
-                        marginTop: '15px', 
-                        fontWeight: 'bold', 
-                        textAlign: 'center',
-                        backgroundColor: '#fdf2f2',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        border: '1px solid #e74c3c'
-                    }}>
-                        {errors.general}
-                    </div>
-                )}
+                {errors.general && <div className="register-general-error">{errors.general}</div>}
+                {success && <div className="register-success">✅ {success}</div>}
 
-                {/* הודעת הצלחה */}
-                {success && (
-                    <div style={{ 
-                        color: '#27ae60', 
-                        marginTop: '15px', 
-                        fontWeight: 'bold', 
-                        textAlign: 'center',
-                        backgroundColor: '#f2fdf5',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        border: '1px solid #27ae60'
-                    }}>
-                        ✅ {success}
-                    </div>
-                )}
-                
-                <button 
-                    onClick={() => navigate('/')}
-                    style={{
-                        marginTop: '20px',
-                        width: '100%',
-                        padding: '10px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#3498db',
-                        cursor: 'pointer',
-                        fontSize: '16px'
-                    }}
-                >
-                      ⬅️ חזרה לעמוד הבית
+                <button onClick={() => navigate('/')} className="register-link-button">
+                    ⬅️ חזרה לעמוד הבית
                 </button>
             </div>
         </div>

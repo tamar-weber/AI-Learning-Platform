@@ -1,10 +1,37 @@
 const mongoose = require('mongoose');
-const PromptSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    prompt: { type: String, required: true },
-    category: { type: String },
-    sub_category: { type: String },
-    response: { type: String, required: true }
-}, { timestamps: true });
+
+const PromptSchema = new mongoose.Schema(
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+            index: true
+        },
+        prompt: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        category: {
+            type: String,
+            default: 'כללי',
+            trim: true
+        },
+        subCategory: {
+            type: String,
+            default: '',
+            trim: true
+        },
+        response: {
+            type: String,
+            required: true,
+            trim: true
+        }
+    },
+    { timestamps: true }
+);
+
+PromptSchema.index({ user: 1, category: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Prompt', PromptSchema);

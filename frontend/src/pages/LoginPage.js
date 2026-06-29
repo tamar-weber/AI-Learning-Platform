@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = 'http://localhost:8000/api';
+import api from '../utils/api';
+import '../styles/loginPage.css';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         idNumber: ''
@@ -69,15 +70,14 @@ function LoginPage() {
         try {
             console.log('🔄 מנסה להתחבר לשרת...', formData);
 
-            const response = await axios.post(`${API_URL}/login`, formData);
+            const response = await api.post('/login', formData);
 
             console.log('✅ התחברות הצליחה:', response.data);
 
             // שמירה ב-localStorage כדי שכל האפליקציה תדע מי המשתמש
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
+            login(response.data);
 
-            // רענון העמוד כדי ש-App.js יקרא את המשתמש החדש
-            window.location.href = '/learning';
+            navigate('/learning', { replace: true });
 
         } catch (err) {
             console.error('❌ שגיאה בהתחברות:', err);
@@ -95,119 +95,47 @@ function LoginPage() {
     };
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            minHeight: '90vh',
-            backgroundColor: '#f8f9fa',
-            padding: '20px',
-            direction: 'rtl'
-        }}>
-            <div style={{
-                backgroundColor: 'white',
-                padding: '40px',
-                borderRadius: '15px',
-                boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
-                width: '100%',
-                maxWidth: '450px'
-            }}>
-                <h2 style={{ 
-                    textAlign: 'center', 
-                    color: '#2c3e50', 
-                    marginBottom: '30px',
-                    fontSize: '2rem'
-                }}>
-                    🔑 כניסה למערכת
-                </h2>
-                
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    
+        <div className="login-page">
+            <div className="login-card">
+                <h2 className="login-title">🔑 כניסה למערכת</h2>
+
+                <form onSubmit={handleSubmit} className="login-form">
                     <div>
-                        <input 
+                        <input
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="שם מלא"
-                            style={{ 
-                                width: '93%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.name ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
-                            }}
+                            className={`login-input ${errors.name ? 'error' : ''}`}
                         />
-                        {errors.name && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.name}</span>}
+                        {errors.name && <span className="login-error-text">❌ {errors.name}</span>}
                     </div>
 
                     <div>
-                        <input 
+                        <input
                             type="text"
                             name="idNumber"
                             value={formData.idNumber}
                             onChange={handleChange}
                             placeholder="תעודת זהות (9 ספרות)"
                             maxLength="9"
-                            style={{ 
-                                width: '93%',
-                                padding: '15px', 
-                                fontSize: '16px', 
-                                border: errors.idNumber ? '2px solid #e74c3c' : '2px solid #ddd', 
-                                borderRadius: '8px'
-                            }}
+                            className={`login-input ${errors.idNumber ? 'error' : ''}`}
                         />
-                        {errors.idNumber && <span style={{ color: '#e74c3c', fontSize: '14px' }}>❌ {errors.idNumber}</span>}
-                        <small style={{ color: '#7f8c8d', fontSize: '12px' }}>
+                        {errors.idNumber && <span className="login-error-text">❌ {errors.idNumber}</span>}
+                        <small className="login-hint">
                             נכתבו {formData.idNumber.length}/9 ספרות
                         </small>
                     </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={isLoading}
-                        style={{ 
-                            padding: '15px', 
-                            fontSize: '18px', 
-                            cursor: isLoading ? 'not-allowed' : 'pointer', 
-                            backgroundColor: isLoading ? '#95a5a6' : '#3498db', 
-                            color: 'white', 
-                            border: 'none', 
-                            borderRadius: '8px'
-                        }}
-                    >
+                    <button type="submit" disabled={isLoading} className="login-submit-button">
                         {isLoading ? '🔄 מתחבר...' : '🚀 התחבר'}
                     </button>
                 </form>
 
-                {errors.general && (
-                    <div style={{ 
-                        color: '#e74c3c', 
-                        marginTop: '15px', 
-                        fontWeight: 'bold', 
-                        textAlign: 'center',
-                        backgroundColor: '#fdf2f2',
-                        padding: '10px',
-                        borderRadius: '5px',
-                        border: '1px solid #e74c3c'
-                    }}>
-                        {errors.general}
-                    </div>
-                )}
-                
-                <button 
-                    onClick={() => navigate('/')}
-                    style={{
-                        marginTop: '20px',
-                        width: '100%',
-                        padding: '10px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#3498db',
-                        cursor: 'pointer',
-                        fontSize: '16px'
-                    }}
-                >
+                {errors.general && <div className="login-general-error">{errors.general}</div>}
+
+                <button onClick={() => navigate('/')} className="login-link-button">
                     אין לך משתמש? לחץ להרשמה
                 </button>
             </div>
