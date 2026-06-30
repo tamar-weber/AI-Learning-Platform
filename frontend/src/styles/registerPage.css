@@ -38,6 +38,12 @@
   border-radius: 8px;
 }
 
+.password-field-wrapper {
+  position: relative;
+}
+
+
+
 .register-input.error {
   border-color: #e74c3c;
 }

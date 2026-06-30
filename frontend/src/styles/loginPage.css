@@ -38,6 +38,33 @@
   border-radius: 8px;
 }
 
+.password-field-wrapper {
+  position: relative;
+}
+
+
+
+.password-toggle-button {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.password-toggle-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+
+
 .login-input.error {
   border-color: #e74c3c;
 }
