@@ -21,6 +21,12 @@ const UserSchema = new mongoose.Schema(
             lowercase: true,
             match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'אימייל לא תקין']
         },
+        password: {
+            type: String,
+            required: true,
+            minlength: 8,
+            select: false
+        },
         idNumber: {
             type: String,
             required: true,

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import '../styles/registerPage.css';
 import { useAuth } from '../context/AuthContext';
+import GenericAuthPage from './GenericAuthPage';
+import { validateEmail, validateIdNumber, validatePhone } from '../utils/validation';
 
 function RegisterPage() {
     const navigate = useNavigate();
@@ -11,7 +13,9 @@ function RegisterPage() {
         name: '',
         phone: '',
         email: '',
-        idNumber: ''
+        idNumber: '',
+        password: '',
+        confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -47,23 +51,6 @@ function RegisterPage() {
         }
     };
 
-    // פונקציות ולידציה
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
-    const validateIdNumber = (idNumber) => {
-        // בדיקה שזה בדיוק 9 ספרות
-        return /^[0-9]{9}$/.test(idNumber);
-    };
-
-    const validatePhone = (phone) => {
-        // בדיקה בסיסית לטלפון ישראלי
-        const phoneRegex = /^05[0-9]-?[0-9]{7}$/;
-        return phoneRegex.test(phone.replace(/[^0-9]/g, ''));
-    };
-
     // ולידציה של כל הטופס
     const validateForm = () => {
         const newErrors = {};
@@ -75,7 +62,7 @@ function RegisterPage() {
         if (!formData.phone.trim()) {
             newErrors.phone = 'נא למלא מספר טלפון';
         } else if (!validatePhone(formData.phone)) {
-            newErrors.phone = 'מספר טלפון לא תקין (דוגמה: 050-1234567)';
+            newErrors.phone = 'מספר טלפון לא תקין (נייד: 0501234567, קווי: 039999999)';
         }
 
         if (!formData.email.trim()) {
@@ -87,7 +74,19 @@ function RegisterPage() {
         if (!formData.idNumber.trim()) {
             newErrors.idNumber = 'נא למלא תעודת זהות';
         } else if (!validateIdNumber(formData.idNumber)) {
-            newErrors.idNumber = 'תעודת זהות חייבת להכיל בדיוק 9 ספרות';
+            newErrors.idNumber = 'תעודת זהות לא תקינה';
+        }
+
+        if (!formData.password.trim()) {
+            newErrors.password = 'נא למלא סיסמה';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'הסיסמה חייבת להכיל לפחות 8 תווים';
+        }
+
+        if (!formData.confirmPassword.trim()) {
+            newErrors.confirmPassword = 'נא לאמת את הסיסמה';
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'הסיסמאות אינן תואמות';
         }
 
         setErrors(newErrors);
@@ -98,7 +97,7 @@ function RegisterPage() {
         e.preventDefault();
         setSuccess('');
 
-        // בדיקת ולידציה
+
         if (!validateForm()) {
             return;
         }
@@ -137,74 +136,77 @@ function RegisterPage() {
     };
 
     return (
-        <div className="register-page">
-            <div className="register-card">
-                <h2 className="register-title">🎓 הצטרפות לפלטפורמה</h2>
-
-                <form onSubmit={handleSubmit} className="register-form">
-                    <div>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="שם מלא"
-                            className={`register-input ${errors.name ? 'error' : ''}`}
-                        />
-                        {errors.name && <span className="register-error-text">❌ {errors.name}</span>}
-                    </div>
-
-                    <div>
-                        <input
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            placeholder="מספר טלפון (050-1234567)"
-                            className={`register-input phone ${errors.phone ? 'error' : ''}`}
-                        />
-                        {errors.phone && <span className="register-error-text">❌ {errors.phone}</span>}
-                    </div>
-
-                    <div>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="כתובת אימייל"
-                            className={`register-input ${errors.email ? 'error' : ''}`}
-                        />
-                        {errors.email && <span className="register-error-text">❌ {errors.email}</span>}
-                    </div>
-
-                    <div>
-                        <input
-                            type="text"
-                            name="idNumber"
-                            value={formData.idNumber}
-                            onChange={handleChange}
-                            placeholder="תעודת זהות (9 ספרות)"
-                            maxLength="9"
-                            className={`register-input ${errors.idNumber ? 'error' : ''}`}
-                        />
-                        {errors.idNumber && <span className="register-error-text">❌ {errors.idNumber}</span>}
-                        <small className="register-hint">נכתבו {formData.idNumber.length}/9 ספרות</small>
-                    </div>
-
-                    <button type="submit" disabled={isLoading} className="register-submit-button">
-                        {isLoading ? '📝 רושם אותך...' : '🚀 הצטרף עכשיו!'}
-                    </button>
-                </form>
-
-                {errors.general && <div className="register-general-error">{errors.general}</div>}
-                {success && <div className="register-success">✅ {success}</div>}
-
-                <button onClick={() => navigate('/')} className="register-link-button">
-                    ⬅️ חזרה לעמוד הבית
-                </button>
-            </div>
-        </div>
+        <GenericAuthPage
+            title="🎓 הצטרפות לפלטפורמה"
+            onSubmit={handleSubmit}
+            fields={[
+                {
+                    name: 'name',
+                    value: formData.name,
+                    onChange: handleChange,
+                    placeholder: 'שם מלא',
+                    inputClassName: 'register-input',
+                    errorClassName: 'register-error-text',
+                    error: errors.name
+                },
+                {
+                    name: 'phone',
+                    type: 'tel',
+                    value: formData.phone,
+                    onChange: handleChange,
+                    placeholder: 'מספר טלפון (050-1234567)',
+                    inputClassName: 'register-input phone',
+                    errorClassName: 'register-error-text',
+                    error: errors.phone
+                },
+                {
+                    name: 'idNumber',
+                    value: formData.idNumber,
+                    onChange: handleChange,
+                    placeholder: 'תעודת זהות (9 ספרות)',
+                    maxLength: '9',
+                    inputClassName: 'register-input',
+                    errorClassName: 'register-error-text',
+                    hintClassName: 'register-hint',
+                    hint: `נכתבו ${formData.idNumber.length}/9 ספרות`,
+                    error: errors.idNumber
+                }
+            ]}
+            credentials={{
+                includeEmail: true,
+                includePassword: true,
+                includeConfirmPassword: true,
+                formData,
+                errors,
+                onChange: handleChange,
+                inputClassName: 'register-input',
+                errorClassName: 'register-error-text',
+                passwordWrapperClassName: 'password-field-wrapper',
+                passwordAutoComplete: 'new-password',
+                confirmPasswordAutoComplete: 'new-password',
+                showPasswordAriaLabel: 'הצג סיסמה',
+                hidePasswordAriaLabel: 'הסתר סיסמה',
+                showConfirmPasswordAriaLabel: 'הצג אימות סיסמה',
+                hideConfirmPasswordAriaLabel: 'הסתר אימות סיסמה'
+            }}
+            isLoading={isLoading}
+            submitLabel="🚀 הצטרף עכשיו!"
+            loadingLabel="📝 רושם אותך..."
+            generalError={errors.general}
+            successMessage={success}
+            onSecondaryAction={() => navigate('/')}
+            secondaryActionLabel="⬅️ חזרה לעמוד הבית"
+            classNames={{
+                page: 'register-page',
+                card: 'register-card',
+                title: 'register-title',
+                form: 'register-form',
+                submitButton: 'register-submit-button',
+                generalError: 'register-general-error',
+                success: 'register-success',
+                secondaryButton: 'register-link-button'
+            }}
+        />
     );
 }
 

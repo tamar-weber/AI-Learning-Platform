@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import '../styles/loginPage.css';
 import { useAuth } from '../context/AuthContext';
+import GenericAuthPage from './GenericAuthPage';
+import { validateEmail } from '../utils/validation';
 
 function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
     const [formData, setFormData] = useState({
-        name: '',
-        idNumber: ''
+        email: '',
+        password: ''
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -17,20 +19,10 @@ function LoginPage() {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // תעודת זהות: ספרות בלבד, עד 9 תווים
-        if (name === 'idNumber') {
-            const numbersOnly = value.replace(/[^0-9]/g, '');
-            const limitedValue = numbersOnly.slice(0, 9);
-            setFormData(prev => ({
-                ...prev,
-                [name]: limitedValue
-            }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
 
         // ניקוי שגיאות בזמן הקלדה
         if (errors[name]) {
@@ -44,14 +36,16 @@ function LoginPage() {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.name.trim()) {
-            newErrors.name = 'נא למלא שם מלא';
+        if (!formData.email.trim()) {
+            newErrors.email = 'נא למלא כתובת אימייל';
+        } else if (!validateEmail(formData.email)) {
+            newErrors.email = 'כתובת אימייל לא תקינה';
         }
 
-        if (!formData.idNumber.trim()) {
-            newErrors.idNumber = 'נא למלא תעודת זהות';
-        } else if (!/^[0-9]{9}$/.test(formData.idNumber)) {
-            newErrors.idNumber = 'תעודת זהות חייבת להכיל בדיוק 9 ספרות';
+        if (!formData.password.trim()) {
+            newErrors.password = 'נא למלא סיסמה';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'הסיסמה חייבת להכיל לפחות 8 תווים';
         }
 
         setErrors(newErrors);
@@ -68,13 +62,13 @@ function LoginPage() {
         setIsLoading(true);
 
         try {
-            console.log('🔄 מנסה להתחבר לשרת...', formData);
+            console.log('🔄 מנסה להתחבר לשרת...', { email: formData.email });
 
             const response = await api.post('/login', formData);
 
             console.log('✅ התחברות הצליחה:', response.data);
 
-            // שמירה ב-localStorage כדי שכל האפליקציה תדע מי המשתמש
+           
             login(response.data);
 
             navigate('/learning', { replace: true });
@@ -95,51 +89,38 @@ function LoginPage() {
     };
 
     return (
-        <div className="login-page">
-            <div className="login-card">
-                <h2 className="login-title">🔑 כניסה למערכת</h2>
-
-                <form onSubmit={handleSubmit} className="login-form">
-                    <div>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="שם מלא"
-                            className={`login-input ${errors.name ? 'error' : ''}`}
-                        />
-                        {errors.name && <span className="login-error-text">❌ {errors.name}</span>}
-                    </div>
-
-                    <div>
-                        <input
-                            type="text"
-                            name="idNumber"
-                            value={formData.idNumber}
-                            onChange={handleChange}
-                            placeholder="תעודת זהות (9 ספרות)"
-                            maxLength="9"
-                            className={`login-input ${errors.idNumber ? 'error' : ''}`}
-                        />
-                        {errors.idNumber && <span className="login-error-text">❌ {errors.idNumber}</span>}
-                        <small className="login-hint">
-                            נכתבו {formData.idNumber.length}/9 ספרות
-                        </small>
-                    </div>
-
-                    <button type="submit" disabled={isLoading} className="login-submit-button">
-                        {isLoading ? '🔄 מתחבר...' : '🚀 התחבר'}
-                    </button>
-                </form>
-
-                {errors.general && <div className="login-general-error">{errors.general}</div>}
-
-                <button onClick={() => navigate('/')} className="login-link-button">
-                    אין לך משתמש? לחץ להרשמה
-                </button>
-            </div>
-        </div>
+        <GenericAuthPage
+            title="🔑 כניסה למערכת"
+            onSubmit={handleSubmit}
+            fields={[]}
+            credentials={{
+                includeEmail: true,
+                includePassword: true,
+                formData,
+                errors,
+                onChange: handleChange,
+                inputClassName: 'login-input',
+                errorClassName: 'login-error-text',
+                passwordWrapperClassName: 'password-field-wrapper',
+                showPasswordAriaLabel: 'הצג סיסמה',
+                hidePasswordAriaLabel: 'הסתר סיסמה'
+            }}
+            isLoading={isLoading}
+            submitLabel="🚀 התחבר"
+            loadingLabel="🔄 מתחבר..."
+            generalError={errors.general}
+            onSecondaryAction={() => navigate('/')}
+            secondaryActionLabel="אין לך משתמש? לחץ להרשמה"
+            classNames={{
+                page: 'login-page',
+                card: 'login-card',
+                title: 'login-title',
+                form: 'login-form',
+                submitButton: 'login-submit-button',
+                generalError: 'login-general-error',
+                secondaryButton: 'login-link-button'
+            }}
+        />
     );
 }
 
