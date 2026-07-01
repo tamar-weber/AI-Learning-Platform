@@ -6,7 +6,9 @@ import RegisterPage from './components/RegisterPage';
 import LoginPage from './components/LoginPage';
 import LearningPage from './components/LearningPage';
 import HistoryPage from './components/HistoryPage';
+import MyCoursesPage from './components/MyCoursesPage';
 import AdminPage from './components/AdminPage';
+import CoursesPage from './components/CoursesPage';
 import Navbar from './components/Navbar';
 import { useAuth } from './context/AuthContext';
 
@@ -50,10 +52,28 @@ function AppRouter() {
                     />
 
                     <Route
+                        path="/my-courses"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role !== 'admin')} redirectTo="/">
+                                <MyCoursesPage currentUser={currentUser} />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
                         path="/admin"
                         element={
                             <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role === 'admin')} redirectTo="/">
                                 <AdminPage currentUser={currentUser} />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/courses"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role === 'admin')} redirectTo="/">
+                                <CoursesPage currentUser={currentUser} />
                             </ProtectedRoute>
                         }
                     />
