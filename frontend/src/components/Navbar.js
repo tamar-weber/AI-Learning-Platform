@@ -16,7 +16,9 @@ function Navbar({ currentUser }) {
     const navItems = [
         { to: '/learning', label: 'צור שיעור', show: Boolean(currentUser) },
         { to: '/history', label: 'היסטוריה', show: Boolean(currentUser) },
-        { to: '/admin', label: 'ניהול', show: isAdmin }
+        { to: '/my-courses', label: 'הקורסים שלי', show: Boolean(currentUser && !isAdmin) },
+        { to: '/admin', label: 'ניהול', show: isAdmin },
+        { to: '/courses', label: 'קורסים', show: isAdmin }
     ];
 
     return (

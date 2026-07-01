@@ -9,6 +9,15 @@ async function getUsers(req, res, next) {
     }
 }
 
+async function deleteUser(req, res, next) {
+    try {
+        const result = await adminService.deleteUser(req.params.userId);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
 async function getUserById(req, res, next) {
     try {
         const user = await adminService.getUserById(req.params.userId);
@@ -30,5 +39,6 @@ async function getAllPrompts(req, res, next) {
 module.exports = {
     getUsers,
     getUserById,
-    getAllPrompts
+    getAllPrompts,
+    deleteUser
 };

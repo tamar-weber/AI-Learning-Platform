@@ -8,9 +8,29 @@ function isValidObjectId(value) {
 }
 
 async function getAllUsers() {
-    return User.find()
+    return User.find({ role: 'student' })
         .select('-__v')
         .sort({ createdAt: -1 });
+}
+
+async function deleteUser(userId) {
+    if (!isValidObjectId(userId)) {
+        throw new AppError('מזהה משתמש לא תקין', 400);
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new AppError('המשתמש לא נמצא', 404);
+    }
+
+    if (user.role !== 'student') {
+        throw new AppError('ניתן למחוק רק תלמידים', 400);
+    }
+
+    await User.deleteOne({ _id: userId });
+
+    return { message: 'המשתמש נמחק בהצלחה' };
 }
 
 async function getUserById(userId) {
@@ -46,5 +66,6 @@ async function getAllPrompts() {
 module.exports = {
     getAllUsers,
     getUserById,
-    getAllPrompts
+    getAllPrompts,
+    deleteUser
 };
