@@ -69,3 +69,86 @@
   font-weight: 600;
   text-align: center;
 }
+
+.admin-success {
+  margin: 0 0 16px;
+  color: #0f766e;
+  font-weight: 600;
+  text-align: center;
+}
+
+.admin-section-title {
+  margin: 0 0 12px;
+  color: #1f3b57;
+}
+
+.admin-campaign-section {
+  margin-bottom: 30px;
+  padding: 18px;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-campaign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-field span {
+  font-weight: 700;
+}
+
+.admin-input,
+.admin-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  font-size: 15px;
+  direction: rtl;
+}
+
+.admin-full-width {
+  grid-column: 1 / -1;
+}
+
+.admin-send-button {
+  align-self: flex-start;
+  background-color: #0f766e;
+}
+
+.admin-campaign-history {
+  margin-top: 20px;
+}
+
+.admin-subsection-title {
+  margin: 0 0 10px;
+  color: #2c3e50;
+}
+
+.admin-campaign-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-campaign-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}

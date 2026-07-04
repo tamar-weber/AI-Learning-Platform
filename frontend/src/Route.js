@@ -4,12 +4,19 @@ import { Navigate, Routes, Route } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import RegisterPage from './components/RegisterPage';
 import LoginPage from './components/LoginPage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
+import ResetPasswordPage from './components/ResetPasswordPage';
 import LearningPage from './components/LearningPage';
 import HistoryPage from './components/HistoryPage';
+import ActivityPage from './components/ActivityPage';
 import MyCoursesPage from './components/MyCoursesPage';
+import PurchaseHistoryPage from './components/PurchaseHistoryPage';
 import AdminPage from './components/AdminPage';
+import AdminMessagingPage from './components/AdminMessagingPage';
+import AdminDashboardPage from './components/AdminDashboardPage';
 import CoursesPage from './components/CoursesPage';
 import Navbar from './components/Navbar';
+import RagChatWidget from './components/RagChatWidget';
 import { useAuth } from './context/AuthContext';
 
 function ProtectedRoute({ children, isAllowed, redirectTo = '/login' }) {
@@ -26,12 +33,15 @@ function AppRouter() {
     return (
         <>
             <Navbar currentUser={currentUser} />
+            {currentUser && <RagChatWidget currentUser={currentUser} />}
 
             <main>
                 <Routes>
                     <Route path="/" element={!currentUser ? <HomePage /> : <Navigate to="/learning" replace />} />
                     <Route path="/register" element={!currentUser ? <RegisterPage /> : <Navigate to="/learning" replace />} />
                     <Route path="/login" element={!currentUser ? <LoginPage /> : <Navigate to="/learning" replace />} />
+                    <Route path="/forgot-password" element={!currentUser ? <ForgotPasswordPage /> : <Navigate to="/learning" replace />} />
+                    <Route path="/reset-password" element={!currentUser ? <ResetPasswordPage /> : <Navigate to="/learning" replace />} />
 
                     <Route
                         path="/learning"
@@ -52,6 +62,15 @@ function AppRouter() {
                     />
 
                     <Route
+                        path="/activity"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser)} redirectTo="/login">
+                                <ActivityPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
                         path="/my-courses"
                         element={
                             <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role !== 'admin')} redirectTo="/">
@@ -61,10 +80,37 @@ function AppRouter() {
                     />
 
                     <Route
+                        path="/purchases"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role !== 'admin')} redirectTo="/">
+                                <PurchaseHistoryPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
                         path="/admin"
                         element={
                             <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role === 'admin')} redirectTo="/">
                                 <AdminPage currentUser={currentUser} />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/admin/messages"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role === 'admin')} redirectTo="/">
+                                <AdminMessagingPage currentUser={currentUser} />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/admin/dashboard"
+                        element={
+                            <ProtectedRoute isAllowed={Boolean(currentUser && currentUser.role === 'admin')} redirectTo="/">
+                                <AdminDashboardPage currentUser={currentUser} />
                             </ProtectedRoute>
                         }
                     />

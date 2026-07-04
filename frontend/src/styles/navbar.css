@@ -18,6 +18,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  position: relative;
 }
 
 .navbar-link {
@@ -45,6 +46,15 @@
   color: #bdc3c7;
 }
 
+.navbar-edit-profile-button {
+  background: transparent;
+  border: 1px solid #58718c;
+  color: #ecf0f1;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
 .navbar-logout-button {
   background-color: #e74c3c;
   color: white;
@@ -52,4 +62,243 @@
   padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.navbar-notification-wrapper {
+  position: relative;
+}
+
+.navbar-notification-button {
+  position: relative;
+  background: #2c3e50;
+  color: #ecf0f1;
+  border: 1px solid #3f5872;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.navbar-notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e74c3c;
+  color: #fff;
+  border-radius: 999px;
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 6px;
+}
+
+.navbar-notification-panel {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  width: 360px;
+  max-height: 420px;
+  overflow: hidden;
+  background: #f8fafc;
+  color: #1f2937;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid #dbe3ea;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-notification-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-mark-all-button,
+.navbar-mark-one-button,
+.navbar-page-button {
+  background: #2980b9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.navbar-mark-all-button:disabled,
+.navbar-mark-one-button:disabled,
+.navbar-page-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navbar-notification-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.navbar-notification-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.navbar-notification-item.unread {
+  background: #edf6ff;
+}
+
+.navbar-notification-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.navbar-notification-message {
+  margin: 0;
+  font-size: 13px;
+}
+
+.navbar-notification-footer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.navbar-notification-empty {
+  margin: 0;
+  padding: 12px;
+  color: #6b7280;
+}
+
+.navbar-notification-pagination {
+  border-top: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.profile-modal-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid #dbe5ef;
+  padding: 18px;
+  direction: rtl;
+}
+
+.profile-modal-title {
+  margin: 0 0 14px;
+}
+
+.profile-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-modal-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-modal-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.profile-modal-input.error {
+  border-color: #dc2626;
+}
+
+.profile-modal-error {
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.profile-modal-general-error {
+  margin-top: 6px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.profile-modal-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.profile-cancel-button,
+.profile-save-button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.profile-cancel-button {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.profile-save-button {
+  background: #2f6ea5;
+  color: #ffffff;
+}
+
+.profile-cancel-button:disabled,
+.profile-save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .navbar-left,
+  .navbar-right {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .navbar-notification-panel {
+    width: min(92vw, 360px);
+    right: -10px;
+  }
 }

@@ -23,6 +23,7 @@ function AdminPage({ currentUser }) {
                 setIsLoading(false);
             }
         };
+
         fetchUsers();
     }, [currentUser]);
 
@@ -69,7 +70,7 @@ function AdminPage({ currentUser }) {
                             <p><strong>מייל:</strong> {user.email}</p>
                             <p><strong>טלפון:</strong> {user.phone}</p>
                             <button onClick={() => navigate(`/history/${user._id}`)} className="admin-button">
-                                צפייה בהיסטוריה
+                               צפייה בהיסטוריית שיעורים
                             </button>
                         </div>
                     ))}
