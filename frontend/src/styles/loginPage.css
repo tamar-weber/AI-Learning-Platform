@@ -115,3 +115,15 @@
   cursor: pointer;
   font-size: 16px;
 }
+
+.forgot-password-button {
+  margin-top: 8px;
+  width: 100%;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: #2f6ea5;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+}

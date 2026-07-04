@@ -83,13 +83,107 @@ function toCourseResponse(course) {
     };
 }
 
+function normalizeSearchValue(value) {
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    return value.trim();
+}
+
+function resolveSearchField(searchBy) {
+    const normalized = normalizeSearchValue(searchBy).toLowerCase();
+
+    if (normalized === 'coursename' || normalized === 'course') {
+        return 'courseName';
+    }
+
+    if (normalized === 'category') {
+        return 'category';
+    }
+
+    if (normalized === 'lecturername' || normalized === 'lecturer' || normalized === 'instructor') {
+        return 'lecturerName';
+    }
+
+    return '';
+}
+
+function normalizeBoolean(value) {
+    if (value === true || value === 'true' || value === '1' || value === 1) {
+        return true;
+    }
+
+    return false;
+}
+
+function startOfToday() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function getAutoEnrollmentStatus(courseStartDate, enrollmentCloseDate) {
+    if (!enrollmentCloseDate || Number.isNaN(new Date(enrollmentCloseDate).getTime())) {
+        return undefined;
+    }
+
+    const today = startOfToday();
+    const closeDate = new Date(enrollmentCloseDate);
+
+    if (closeDate < today) {
+        return 'inactive';
+    }
+
+    if (!courseStartDate || Number.isNaN(new Date(courseStartDate).getTime())) {
+        return undefined;
+    }
+
+    return undefined;
+}
+
+function validateCourseDates(courseStartDate, enrollmentCloseDate) {
+    if (Number.isNaN(courseStartDate.getTime()) || Number.isNaN(enrollmentCloseDate.getTime())) {
+        throw new AppError('תאריך פתיחת קורס או תאריך סגירת הרשמה לא תקין', 400);
+    }
+
+    const today = startOfToday();
+
+    if (courseStartDate < today) {
+        throw new AppError('לא ניתן להוסיף או לעדכן קורס עם תאריך פתיחה שכבר עבר', 400);
+    }
+
+    if (enrollmentCloseDate < today) {
+        throw new AppError('לא ניתן להוסיף או לעדכן קורס עם תאריך סגירת הרשמה שכבר עבר', 400);
+    }
+
+    if (enrollmentCloseDate >= courseStartDate) {
+        throw new AppError('תאריך סגירת הרשמה חייב להיות לפני תאריך פתיחת הקורס', 400);
+    }
+}
+
+async function syncExpiredCoursesStatus() {
+    const today = startOfToday();
+
+    await Course.updateMany(
+        {
+            enrollmentStatus: 'active',
+            enrollmentCloseDate: { $lt: today }
+        },
+        {
+            $set: { enrollmentStatus: 'inactive' }
+        }
+    );
+}
+
 async function createCourse(courseData) {
     const courseName = typeof courseData.courseName === 'string' ? courseData.courseName.trim() : '';
     const lecturerName = typeof courseData.lecturerName === 'string' ? courseData.lecturerName.trim() : '';
     const courseDescription = typeof courseData.courseDescription === 'string' ? courseData.courseDescription.trim() : '';
     const lessonsCount = Number(courseData.lessonsCount);
     const category = typeof courseData.category === 'string' ? courseData.category.trim() : '';
-    const currentEnrollment = Number(courseData.currentEnrollment);
+    const currentEnrollment = courseData.currentEnrollment === undefined
+        ? 0
+        : Number(courseData.currentEnrollment);
     const courseStartDate = new Date(courseData.courseStartDate);
     const enrollmentCloseDate = new Date(courseData.enrollmentCloseDate);
     const coursePrice = Number(courseData.coursePrice);
@@ -101,18 +195,17 @@ async function createCourse(courseData) {
         || !courseDescription
         || Number.isNaN(lessonsCount)
         || !category
-        || Number.isNaN(currentEnrollment)
         || Number.isNaN(coursePrice)
         || Number.isNaN(courseStartDate.getTime())
         || Number.isNaN(enrollmentCloseDate.getTime())
     ) {
         throw new AppError(
-            'חסרים שדות נדרשים: courseName, lecturerName, courseDescription, lessonsCount, category, currentEnrollment, courseStartDate, enrollmentCloseDate, coursePrice',
+            'חסרים שדות נדרשים: courseName, lecturerName, courseDescription, lessonsCount, category, courseStartDate, enrollmentCloseDate, coursePrice',
             400
         );
     }
 
-    if (coursePrice < 0 || lessonsCount < 0 || currentEnrollment < 0) {
+    if (coursePrice < 0 || lessonsCount < 0 || Number.isNaN(currentEnrollment) || currentEnrollment < 0) {
         throw new AppError('מחיר הקורס, מספר שיעורים ומספר נרשמים נוכחי חייבים להיות 0 ומעלה', 400);
     }
 
@@ -120,9 +213,9 @@ async function createCourse(courseData) {
         throw new AppError('מספר שיעורים ומספר נרשמים נוכחי חייבים להיות מספרים שלמים', 400);
     }
 
-    if (enrollmentCloseDate < courseStartDate) {
-        throw new AppError('סגירת הרשמה לא יכולה להיות לפני תאריך פתיחת הקורס', 400);
-    }
+    validateCourseDates(courseStartDate, enrollmentCloseDate);
+
+    const computedStatus = getAutoEnrollmentStatus(courseStartDate, enrollmentCloseDate) || enrollmentStatus;
 
     const course = await Course.create({
         courseName,
@@ -134,17 +227,79 @@ async function createCourse(courseData) {
         courseStartDate,
         enrollmentCloseDate,
         coursePrice,
-        enrollmentStatus
+        enrollmentStatus: computedStatus
     });
 
     return toCourseResponse(course);
 }
 
-async function getAllCourses() {
-    const courses = await Course.find().sort({ createdAt: -1 });
+async function getAllCourses(query = {}) {
+    await syncExpiredCoursesStatus();
+
+    const search = normalizeSearchValue(query.search);
+    const category = normalizeSearchValue(query.category);
+    const searchField = resolveSearchField(query.searchBy);
+    const onlyActive = normalizeBoolean(query.onlyActive);
+    const normalizedPage = Number(query.page) > 0 ? Number(query.page) : 1;
+    const normalizedLimit = Number(query.limit) > 0 ? Math.min(Number(query.limit), 50) : 0;
+    const mongoQuery = {};
+
+    if (onlyActive) {
+        mongoQuery.enrollmentStatus = 'active';
+    }
+
+    if (search) {
+        if (searchField) {
+            mongoQuery[searchField] = { $regex: search, $options: 'i' };
+        } else {
+            mongoQuery.$or = [
+                { courseName: { $regex: search, $options: 'i' } },
+                { lecturerName: { $regex: search, $options: 'i' } },
+                { courseDescription: { $regex: search, $options: 'i' } },
+                { category: { $regex: search, $options: 'i' } }
+            ];
+        }
+    }
+
+    if (category) {
+        mongoQuery.category = { $regex: `^${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' };
+    }
+
+    const baseQuery = Course.find(mongoQuery).sort({ createdAt: -1 });
+
+    if (!normalizedLimit) {
+        const courses = await baseQuery;
+        const normalizedCourses = await Promise.all(courses.map((course) => backfillCourseIfNeeded(course)));
+
+        return {
+            items: normalizedCourses.map(toCourseResponse),
+            pagination: {
+                page: 1,
+                limit: 0,
+                total: normalizedCourses.length,
+                totalPages: 1
+            }
+        };
+    }
+
+    const skip = (normalizedPage - 1) * normalizedLimit;
+
+    const [courses, total] = await Promise.all([
+        baseQuery.skip(skip).limit(normalizedLimit),
+        Course.countDocuments(mongoQuery)
+    ]);
+
     const normalizedCourses = await Promise.all(courses.map((course) => backfillCourseIfNeeded(course)));
 
-    return normalizedCourses.map(toCourseResponse);
+    return {
+        items: normalizedCourses.map(toCourseResponse),
+        pagination: {
+            page: normalizedPage,
+            limit: normalizedLimit,
+            total,
+            totalPages: Math.max(Math.ceil(total / normalizedLimit), 1)
+        }
+    };
 }
 
 async function getCourseById(courseId) {
@@ -206,6 +361,9 @@ async function updateCourse(courseId, updates) {
         updatePayload.currentEnrollment = normalizedCurrentEnrollment;
     }
 
+    let effectiveStartDateForValidation;
+    let effectiveCloseDateForValidation;
+
     if (updates.courseStartDate !== undefined) {
         const normalizedStartDate = new Date(updates.courseStartDate);
 
@@ -240,26 +398,27 @@ async function updateCourse(courseId, updates) {
         updatePayload.enrollmentStatus = normalizeStatus(updates.enrollmentStatus);
     }
 
-    const effectiveStartDate = updatePayload.courseStartDate || updates.courseStartDate;
-    const effectiveCloseDate = updatePayload.enrollmentCloseDate || updates.enrollmentCloseDate;
+    const existingCourse = await Course.findById(courseId);
 
-    if (effectiveStartDate && effectiveCloseDate) {
-        const startDate = new Date(effectiveStartDate);
-        const closeDate = new Date(effectiveCloseDate);
+    if (!existingCourse) {
+        throw new AppError('הקורס לא נמצא', 404);
+    }
 
-        if (closeDate < startDate) {
-            throw new AppError('סגירת הרשמה לא יכולה להיות לפני תאריך פתיחת הקורס', 400);
-        }
+    effectiveStartDateForValidation = updatePayload.courseStartDate || existingCourse.courseStartDate;
+    effectiveCloseDateForValidation = updatePayload.enrollmentCloseDate || existingCourse.enrollmentCloseDate;
+
+    validateCourseDates(new Date(effectiveStartDateForValidation), new Date(effectiveCloseDateForValidation));
+
+    const autoStatus = getAutoEnrollmentStatus(effectiveStartDateForValidation, effectiveCloseDateForValidation);
+
+    if (autoStatus) {
+        updatePayload.enrollmentStatus = autoStatus;
     }
 
     const course = await Course.findByIdAndUpdate(courseId, updatePayload, {
         new: true,
         runValidators: true
     });
-
-    if (!course) {
-        throw new AppError('הקורס לא נמצא', 404);
-    }
 
     return toCourseResponse(course);
 }

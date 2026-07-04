@@ -1,0 +1,60 @@
+.activity-page {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  direction: rtl;
+}
+
+.activity-page-title {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.activity-page-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.activity-page-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fcfcfc;
+}
+
+.activity-page-date {
+  color: #6b7280;
+}
+
+.activity-page-empty {
+  text-align: center;
+  font-size: 18px;
+}
+
+.activity-page-error {
+  text-align: center;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.activity-page-pagination {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-page-button {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #2f6ea5;
+  color: #fff;
+  cursor: pointer;
+}
+
+.activity-page-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

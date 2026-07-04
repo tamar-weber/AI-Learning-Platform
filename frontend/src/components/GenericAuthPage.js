@@ -15,6 +15,9 @@ function GenericAuthPage({
     successMessage,
     onSecondaryAction,
     secondaryActionLabel,
+    onTertiaryAction,
+    tertiaryActionLabel,
+    tertiaryActionClassName,
     classNames
 }) {
     const [passwordVisibility, setPasswordVisibility] = useState({});
@@ -135,6 +138,16 @@ function GenericAuthPage({
                 <button onClick={onSecondaryAction} className={classNames.secondaryButton}>
                     {secondaryActionLabel}
                 </button>
+
+                {onTertiaryAction && tertiaryActionLabel && (
+                    <button
+                        type="button"
+                        onClick={onTertiaryAction}
+                        className={tertiaryActionClassName || 'login-link-button'}
+                    >
+                        {tertiaryActionLabel}
+                    </button>
+                )}
             </div>
         </div>
     );

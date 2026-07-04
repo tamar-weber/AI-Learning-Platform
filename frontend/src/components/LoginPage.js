@@ -111,6 +111,9 @@ function LoginPage() {
             generalError={errors.general}
             onSecondaryAction={() => navigate('/')}
             secondaryActionLabel="אין לך משתמש? לחץ להרשמה"
+            onTertiaryAction={() => navigate('/forgot-password')}
+            tertiaryActionLabel="שכחת סיסמה?"
+            tertiaryActionClassName="forgot-password-button"
             classNames={{
                 page: 'login-page',
                 card: 'login-card',

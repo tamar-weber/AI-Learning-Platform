@@ -38,6 +38,26 @@ const UserSchema = new mongoose.Schema(
             type: String,
             enum: ['student', 'admin', 'teacher'],
             default: 'student'
+        },
+        passwordResetTokenHash: {
+            type: String,
+            default: null,
+            select: false
+        },
+        passwordResetExpiresAt: {
+            type: Date,
+            default: null,
+            select: false
+        },
+        passwordResetRequestedAt: {
+            type: Date,
+            default: null,
+            select: false
+        },
+        passwordResetRequestCount: {
+            type: Number,
+            default: 0,
+            select: false
         }
     },
     { timestamps: true }

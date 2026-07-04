@@ -1,0 +1,124 @@
+.admin-dashboard-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
+  direction: rtl;
+}
+
+.admin-dashboard-header {
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-title {
+  margin: 0 0 8px;
+}
+
+.admin-dashboard-subtitle {
+  margin: 0;
+  color: #5b6b7b;
+}
+
+.admin-dashboard-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #dde5ee;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-dashboard-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-dashboard-filter-field input {
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.admin-dashboard-filter-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.admin-dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #dde5ee;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.admin-dashboard-card span {
+  display: block;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.admin-dashboard-card strong {
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-dashboard-panel {
+  border: 1px solid #dde5ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+}
+
+.admin-dashboard-panel h2 {
+  margin: 0 0 14px;
+}
+
+.admin-dashboard-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.admin-dashboard-row:last-child {
+  border-bottom: none;
+}
+
+.admin-dashboard-empty,
+.admin-dashboard-error {
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-page {
+    padding: 16px;
+  }
+
+  .admin-dashboard-row {
+    flex-direction: column;
+  }
+}

@@ -29,7 +29,7 @@ const CourseSchema = new mongoose.Schema(
         },
         currentEnrollment: {
             type: Number,
-            required: true,
+            default: 0,
             min: 0
         },
         courseStartDate: {
@@ -55,5 +55,8 @@ const CourseSchema = new mongoose.Schema(
 );
 
 CourseSchema.index({ createdAt: -1 });
+CourseSchema.index({ courseName: 1 });
+CourseSchema.index({ category: 1 });
+CourseSchema.index({ enrollmentStatus: 1 });
 
 module.exports = mongoose.model('Course', CourseSchema);

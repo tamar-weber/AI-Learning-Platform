@@ -35,6 +35,7 @@ function HistoryPage({ currentUser }) {
                 setIsLoading(false);
             }
         };
+
         const fetchUser = async () => {
             try {
                 const response = await api.get(`/admin/user/${userId}`);
@@ -54,6 +55,7 @@ function HistoryPage({ currentUser }) {
     }, [userId, currentUser, navigate]);
 
     if (isLoading) return <div className="history-page">טוען היסטוריה...</div>;
+    if (error) return <div className="history-page">{error}</div>;
 
     const pageTitle = userId && currentUser?.role === 'admin'
         ? `היסטוריית הלמידה של משתמש ${user.name}`

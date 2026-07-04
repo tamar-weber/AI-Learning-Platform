@@ -13,7 +13,6 @@ const INITIAL_FORM = {
     courseDescription: '',
     lessonsCount: '',
     category: '',
-    currentEnrollment: '',
     courseStartDate: '',
     enrollmentCloseDate: '',
     coursePrice: '',
@@ -36,6 +35,12 @@ function normalizeDateForInput(value) {
 
 function CoursesPage() {
     const [courses, setCourses] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchBy, setSearchBy] = useState('courseName');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(8);
+    const [pagination, setPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
     const [formData, setFormData] = useState(INITIAL_FORM);
     const [editingCourseId, setEditingCourseId] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -48,11 +53,20 @@ function CoursesPage() {
         editingCourseId ? 'שמירת שינויים' : 'יצירת קורס'
     ), [editingCourseId]);
 
-    const loadCourses = async () => {
+    const loadCourses = async ({ page: nextPage = page, search = searchTerm, selectedSearchBy = searchBy } = {}) => {
         try {
             setError('');
-            const response = await api.get('/courses');
-            setCourses(response.data);
+            const response = await api.get('/courses', {
+                params: {
+                    page: nextPage,
+                    limit,
+                    search,
+                    searchBy: selectedSearchBy
+                }
+            });
+
+            setCourses(response.data.items || []);
+            setPagination(response.data.pagination || { page: nextPage, limit, total: 0, totalPages: 1 });
         } catch (err) {
             console.error('שגיאה בטעינת קורסים:', err);
             setError('לא ניתן היה לטעון את רשימת הקורסים.');
@@ -62,8 +76,21 @@ function CoursesPage() {
     };
 
     useEffect(() => {
-        loadCourses();
+        loadCourses({ page: 1 });
     }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setSearchTerm(searchInput);
+            setPage(1);
+        }, 400);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
+
+    useEffect(() => {
+        loadCourses({ page, search: searchTerm, selectedSearchBy: searchBy });
+    }, [page, searchTerm, searchBy]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -81,7 +108,6 @@ function CoursesPage() {
 
     const validateForm = () => {
         const normalizedLessonsCount = Number(formData.lessonsCount);
-        const normalizedCurrentEnrollment = Number(formData.currentEnrollment);
         const normalizedPrice = Number(formData.coursePrice);
         const normalizedStartDate = new Date(formData.courseStartDate);
         const normalizedCloseDate = new Date(formData.enrollmentCloseDate);
@@ -98,18 +124,16 @@ function CoursesPage() {
 
         if (
             Number.isNaN(normalizedLessonsCount)
-            || Number.isNaN(normalizedCurrentEnrollment)
             || Number.isNaN(normalizedPrice)
             || normalizedLessonsCount < 0
-            || normalizedCurrentEnrollment < 0
             || normalizedPrice < 0
         ) {
-            setError('מספר שיעורים, מספר נרשמים ומחיר קורס חייבים להיות 0 ומעלה.');
+            setError('מספר שיעורים ומחיר קורס חייבים להיות 0 ומעלה.');
             return null;
         }
 
-        if (!Number.isInteger(normalizedLessonsCount) || !Number.isInteger(normalizedCurrentEnrollment)) {
-            setError('מספר שיעורים ומספר נרשמים חייבים להיות מספרים שלמים.');
+        if (!Number.isInteger(normalizedLessonsCount)) {
+            setError('מספר שיעורים חייב להיות מספר שלם.');
             return null;
         }
 
@@ -118,8 +142,21 @@ function CoursesPage() {
             return null;
         }
 
-        if (normalizedCloseDate < normalizedStartDate) {
-            setError('סגירת הרשמה לא יכולה להיות לפני תאריך פתיחת הקורס.');
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        if (normalizedStartDate < todayStart) {
+            setError('לא ניתן להוסיף או לעדכן קורס עם תאריך פתיחה שכבר עבר.');
+            return null;
+        }
+
+        if (normalizedCloseDate < todayStart) {
+            setError('לא ניתן להוסיף או לעדכן קורס עם תאריך סגירת הרשמה שכבר עבר.');
+            return null;
+        }
+
+        if (normalizedCloseDate >= normalizedStartDate) {
+            setError('תאריך סגירת הרשמה חייב להיות לפני תאריך פתיחת הקורס.');
             return null;
         }
 
@@ -129,7 +166,6 @@ function CoursesPage() {
             courseDescription: formData.courseDescription.trim(),
             lessonsCount: normalizedLessonsCount,
             category: formData.category.trim(),
-            currentEnrollment: normalizedCurrentEnrollment,
             courseStartDate: formData.courseStartDate,
             enrollmentCloseDate: formData.enrollmentCloseDate,
             coursePrice: normalizedPrice,
@@ -186,7 +222,6 @@ function CoursesPage() {
             courseDescription: course.courseDescription || '',
             lessonsCount: String(course.lessonsCount ?? ''),
             category: course.category || '',
-            currentEnrollment: String(course.currentEnrollment ?? ''),
             courseStartDate: normalizeDateForInput(course.courseStartDate),
             enrollmentCloseDate: normalizeDateForInput(course.enrollmentCloseDate),
             coursePrice: String(course.coursePrice),
@@ -201,6 +236,25 @@ function CoursesPage() {
         setEditingCourseId('');
         setFormData(INITIAL_FORM);
         setIsFormVisible(true);
+    };
+
+    const handleSearchInputChange = (event) => {
+        setSearchInput(event.target.value);
+    };
+
+    const handleSearchByChange = (event) => {
+        setSearchBy(event.target.value);
+        setSearchInput('');
+        setSearchTerm('');
+        setPage(1);
+    };
+
+    const handlePrevPage = () => {
+        setPage((current) => Math.max(current - 1, 1));
+    };
+
+    const handleNextPage = () => {
+        setPage((current) => Math.min(current + 1, pagination.totalPages || 1));
     };
 
     const handleDelete = async (course) => {
@@ -236,6 +290,29 @@ function CoursesPage() {
                 </button>
             </header>
 
+            <section className="courses-filters">
+                 <input
+                    type="search"
+                    className="courses-input courses-search-input"
+                    value={searchInput}
+                    onChange={handleSearchInputChange}
+                    placeholder={
+                        searchBy === 'courseName'
+                            ? 'הקלד שם קורס'
+                            : searchBy === 'category'
+                                ? 'הקלד קטגוריה'
+                                : 'הקלד שם מרצה'
+                    }
+                />
+                <select className="courses-input courses-filter-select" value={searchBy} onChange={handleSearchByChange}>
+                    <option value="courseName">חיפוש לפי שם קורס</option>
+                    <option value="category">חיפוש לפי קטגוריה</option>
+                    <option value="lecturerName">חיפוש לפי מרצה</option>
+                </select>
+
+               
+            </section>
+
             {error && <p className="courses-message courses-error">{error}</p>}
             {successMessage && <p className="courses-message courses-success">{successMessage}</p>}
 
@@ -255,7 +332,6 @@ function CoursesPage() {
                                 <p><strong>תיאור:</strong> {course.courseDescription || '-'}</p>
                                 <p><strong>מספר שיעורים:</strong> {course.lessonsCount ?? '-'}</p>
                                 <p><strong>קטגוריה:</strong> {course.category || '-'}</p>
-                                <p><strong>מספר נרשמים נוכחי:</strong> {course.currentEnrollment ?? '-'}</p>
                                 <p><strong>תאריך פתיחת הקורס:</strong> {course.courseStartDate ? new Date(course.courseStartDate).toLocaleDateString('he-IL') : '-'}</p>
                                 <p><strong>סגירת הרשמה:</strong> {course.enrollmentCloseDate ? new Date(course.enrollmentCloseDate).toLocaleDateString('he-IL') : '-'}</p>
                                 <p><strong>מחיר:</strong> ₪{Number(course.coursePrice).toLocaleString('he-IL')}</p>
@@ -277,6 +353,23 @@ function CoursesPage() {
                         ))}
                     </div>
                 )}
+
+                <div className="courses-pagination">
+                    <button type="button" className="courses-secondary-button" onClick={handlePrevPage} disabled={page <= 1}>
+                        הקודם
+                    </button>
+                    <span className="courses-pagination-status">
+                        עמוד {pagination.page || 1} מתוך {pagination.totalPages || 1} - {pagination.total || 0} תוצאות
+                    </span>
+                    <button
+                        type="button"
+                        className="courses-secondary-button"
+                        onClick={handleNextPage}
+                        disabled={page >= (pagination.totalPages || 1)}
+                    >
+                        הבא
+                    </button>
+                </div>
             </section>
 
             {isFormVisible && (
@@ -343,18 +436,6 @@ function CoursesPage() {
                                 value={formData.category}
                                 onChange={handleChange}
                                 placeholder="לדוגמה: פיתוח אתרים"
-                            />
-
-                            <label className="courses-label" htmlFor="currentEnrollment">מספר נרשמים נוכחי</label>
-                            <input
-                                id="currentEnrollment"
-                                name="currentEnrollment"
-                                type="number"
-                                min="0"
-                                className="courses-input"
-                                value={formData.currentEnrollment}
-                                onChange={handleChange}
-                                placeholder="0"
                             />
 
                             <label className="courses-label" htmlFor="courseStartDate">תאריך פתיחת הקורס</label>
