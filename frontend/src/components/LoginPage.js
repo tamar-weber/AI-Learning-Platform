@@ -1,61 +1,47 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import '../styles/loginPage.css';
 import { useAuth } from '../context/AuthContext';
 import GenericAuthPage from './GenericAuthPage';
 import { validateEmail } from '../utils/validation';
+import useAuthForm from '../hooks/useAuthForm';
+import { getAuthErrorMessage } from '../utils/apiErrors';
+import { minLengthRule, patternRule, requiredRule, validateWithSchema } from '../utils/validationRules';
+
+const loginValidationSchema = {
+    email: [
+        requiredRule('נא למלא כתובת אימייל'),
+        patternRule(validateEmail, 'כתובת אימייל לא תקינה')
+    ],
+    password: [
+        requiredRule('נא למלא סיסמה'),
+        minLengthRule(8, 'הסיסמה חייבת להכיל לפחות 8 תווים')
+    ]
+};
 
 function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
-    const [formData, setFormData] = useState({
+    const {
+        formData,
+        errors,
+        setErrors,
+        isLoading,
+        setIsLoading,
+        handleChange,
+        runValidation
+    } = useAuthForm({
         email: '',
         password: ''
+    }, {
+        validate: (data) => validateWithSchema(loginValidationSchema, data)
     });
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        // ניקוי שגיאות בזמן הקלדה
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
-        }
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.email.trim()) {
-            newErrors.email = 'נא למלא כתובת אימייל';
-        } else if (!validateEmail(formData.email)) {
-            newErrors.email = 'כתובת אימייל לא תקינה';
-        }
-
-        if (!formData.password.trim()) {
-            newErrors.password = 'נא למלא סיסמה';
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'הסיסמה חייבת להכיל לפחות 8 תווים';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!validateForm()) {
+        if (!runValidation()) {
             return;
         }
 
@@ -75,14 +61,7 @@ function LoginPage() {
 
         } catch (err) {
             console.error('❌ שגיאה בהתחברות:', err);
-
-            if (err.response?.data?.error) {
-                setErrors({ general: err.response.data.error });
-            } else if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-                setErrors({ general: '🔌 לא ניתן להתחבר לשרת. בדוק שהשרת רץ!' });
-            } else {
-                setErrors({ general: 'שגיאה בהתחברות. בדוק את הפרטים ונסה שוב.' });
-            }
+            setErrors({ general: getAuthErrorMessage(err, 'שגיאה בהתחברות. בדוק את הפרטים ונסה שוב.') });
         } finally {
             setIsLoading(false);
         }

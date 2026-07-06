@@ -5,100 +5,67 @@ import '../styles/registerPage.css';
 import { useAuth } from '../context/AuthContext';
 import GenericAuthPage from './GenericAuthPage';
 import { validateEmail, validateIdNumber, validatePhone } from '../utils/validation';
+import useAuthForm from '../hooks/useAuthForm';
+import { getAuthErrorMessage } from '../utils/apiErrors';
+import { customRule, minLengthRule, patternRule, requiredRule, validateWithSchema } from '../utils/validationRules';
+
+const digitsOnlyFormatter = (value) => value.replace(/[^0-9]/g, '').slice(0, 9);
+
+const registerValidationSchema = {
+    name: [requiredRule('נא למלא שם מלא')],
+    phone: [
+        requiredRule('נא למלא מספר טלפון'),
+        patternRule(validatePhone, 'מספר טלפון לא תקין (נייד: 0501234567, קווי: 039999999)')
+    ],
+    email: [
+        requiredRule('נא למלא כתובת אימייל'),
+        patternRule(validateEmail, 'כתובת אימייל לא תקינה')
+    ],
+    idNumber: [
+        requiredRule('נא למלא תעודת זהות'),
+        patternRule(validateIdNumber, 'תעודת זהות לא תקינה')
+    ],
+    password: [
+        requiredRule('נא למלא סיסמה'),
+        minLengthRule(8, 'הסיסמה חייבת להכיל לפחות 8 תווים')
+    ],
+    confirmPassword: [
+        requiredRule('נא לאמת את הסיסמה'),
+        customRule((value, data) => value !== data.password ? 'הסיסמאות אינן תואמות' : null)
+    ]
+};
 
 function RegisterPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
-    const [formData, setFormData] = useState({
+    const {
+        formData,
+        errors,
+        setErrors,
+        isLoading,
+        setIsLoading,
+        handleChange,
+        runValidation
+    } = useAuthForm({
         name: '',
         phone: '',
         email: '',
         idNumber: '',
         password: '',
         confirmPassword: ''
+    }, {
+        validate: (data) => validateWithSchema(registerValidationSchema, data),
+        formatters: {
+            idNumber: digitsOnlyFormatter
+        }
     });
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState('');
 
-    // פונקציה שמנקה שגיאות כשמתחילים לכתוב
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        
-        // עבור תעודת זהות - לאפשר רק ספרות
-        if (name === 'idNumber') {
-            // הסרת כל מה שלא ספרה
-            const numbersOnly = value.replace(/[^0-9]/g, '');
-            // מקסימום 9 ספרות
-            const limitedValue = numbersOnly.slice(0, 9);
-            setFormData(prev => ({
-                ...prev,
-                [name]: limitedValue
-            }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
-
-        // ניקוי שגיאה של השדה הספציפי כשמתחילים לכתוב
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
-        }
-    };
-
-    // ולידציה של כל הטופס
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.name.trim()) {
-            newErrors.name = 'נא למלא שם מלא';
-        }
-
-        if (!formData.phone.trim()) {
-            newErrors.phone = 'נא למלא מספר טלפון';
-        } else if (!validatePhone(formData.phone)) {
-            newErrors.phone = 'מספר טלפון לא תקין (נייד: 0501234567, קווי: 039999999)';
-        }
-
-        if (!formData.email.trim()) {
-            newErrors.email = 'נא למלא כתובת אימייל';
-        } else if (!validateEmail(formData.email)) {
-            newErrors.email = 'כתובת אימייל לא תקינה';
-        }
-
-        if (!formData.idNumber.trim()) {
-            newErrors.idNumber = 'נא למלא תעודת זהות';
-        } else if (!validateIdNumber(formData.idNumber)) {
-            newErrors.idNumber = 'תעודת זהות לא תקינה';
-        }
-
-        if (!formData.password.trim()) {
-            newErrors.password = 'נא למלא סיסמה';
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'הסיסמה חייבת להכיל לפחות 8 תווים';
-        }
-
-        if (!formData.confirmPassword.trim()) {
-            newErrors.confirmPassword = 'נא לאמת את הסיסמה';
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'הסיסמאות אינן תואמות';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
         setSuccess('');
 
-
-        if (!validateForm()) {
+        if (!runValidation()) {
             return;
         }
 
@@ -122,14 +89,8 @@ function RegisterPage() {
 
         } catch (err) {
             console.error('❌ שגיאה ברישום:', err);
-            
-            if (err.response?.data?.error) {
-                setErrors({ general: err.response.data.error });
-            } else if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-                setErrors({ general: '🔌 לא ניתן להתחבר לשרת. בדוק שהשרת רץ!' });
-            } else {
-                setErrors({ general: 'אופס, לא הצלחנו לרשום אותך. נסה שוב.' });
-            }
+
+            setErrors({ general: getAuthErrorMessage(err, 'אופס, לא הצלחנו לרשום אותך. נסה שוב.') });
         } finally {
             setIsLoading(false);
         }
