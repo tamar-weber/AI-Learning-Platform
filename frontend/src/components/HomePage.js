@@ -10,8 +10,7 @@ function HomePage() {
             <h1 className="home-page-title">🎓 פלטפורמת למידה חכמה</h1>
 
             <p className="home-page-subtitle">
-                למד בעזרת בינה מלאכותית! קבל שיעורים מותאמים אישית בכל נושא שמעניין אותך
-            </p>
+                יצירת שיעורים מותאמים אישית בעזרת בינה מלאכותית, לצד מגוון קורסים מקצועיים ללמידה והתקדמות.            </p>
 
             <div className="home-page-actions">
                 <button
@@ -33,16 +32,16 @@ function HomePage() {
                 <h3 className="home-page-info-title">💡 איך זה עובד?</h3>
                 <div className="home-page-info-grid">
                     <div className="home-page-info-card">
-                        <h4>📝 בחר נושא</h4>
-                        <p>בחר מתוך מגוון קטגוריות ונושאים</p>
+                        <h4>🔍 בחרו נושא או קורס</h4>
+                        <p>חפשו את התחום שמעניין אתכם.</p>
                     </div>
                     <div className="home-page-info-card">
-                        <h4>🤖 שאל שאלה</h4>
-                        <p>כתוב מה שמעניין אותך ללמוד</p>
+                        <h4>🤖 צרו או רכשו</h4>
+                        <p>צרו שיעור מותאם אישית באמצעות AI או הירשמו לקורס מקצועי.</p>
                     </div>
                     <div className="home-page-info-card">
-                        <h4>🎓 קבל שיעור</h4>
-                        <p>קבל שיעור מותאם אישית מה-AI</p>
+                        <h4>📈 למדו והתקדמו</h4>
+                        <p>המשיכו ללמוד מכל מקום ובכל זמן.</p>
                     </div>
                 </div>
             </div>

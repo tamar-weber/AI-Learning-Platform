@@ -4,52 +4,44 @@ import api from '../api/api';
 import GenericAuthPage from './GenericAuthPage';
 import '../styles/loginPage.css';
 import { validateEmail } from '../utils/validation';
+import useAuthForm from '../hooks/useAuthForm';
+import { getAuthErrorMessage } from '../utils/apiErrors';
+import { patternRule, requiredRule, validateWithSchema } from '../utils/validationRules';
+
+const forgotPasswordValidationSchema = {
+    email: [
+        requiredRule('נא למלא כתובת אימייל'),
+        patternRule(validateEmail, 'כתובת אימייל לא תקינה')
+    ]
+};
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ email: '' });
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
+    const {
+        formData,
+        errors,
+        setErrors,
+        isLoading,
+        setIsLoading,
+        handleChange,
+        runValidation
+    } = useAuthForm({ email: '' }, {
+        validate: (data) => validateWithSchema(forgotPasswordValidationSchema, data),
+        clearGeneralErrorOnChange: true
+    });
     const [successMessage, setSuccessMessage] = useState('');
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-
-        if (errors[name] || errors.general) {
-            setErrors((prev) => ({
-                ...prev,
-                [name]: '',
-                general: ''
-            }));
-        }
-
+    const handleFormChange = (event) => {
+        handleChange(event);
         if (successMessage) {
             setSuccessMessage('');
         }
     };
 
-    const validateForm = () => {
-        const newErrors = {};
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-        if (!formData.email.trim()) {
-            newErrors.email = 'נא למלא כתובת אימייל';
-        } else if (!validateEmail(formData.email)) {
-            newErrors.email = 'כתובת אימייל לא תקינה';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!validateForm()) {
+        if (!runValidation()) {
             return;
         }
 
@@ -62,9 +54,7 @@ function ForgotPasswordPage() {
 
             setSuccessMessage(response?.data?.message || 'אם האימייל קיים במערכת, נשלח קישור לאיפוס סיסמה.');
         } catch (err) {
-            setErrors({
-                general: err.response?.data?.error || 'אירעה שגיאה בשליחת בקשת האיפוס. נסה שוב.'
-            });
+            setErrors({ general: getAuthErrorMessage(err, 'אירעה שגיאה בשליחת בקשת האיפוס. נסה שוב.') });
         } finally {
             setIsLoading(false);
         }
@@ -80,7 +70,7 @@ function ForgotPasswordPage() {
                 includePassword: false,
                 formData,
                 errors,
-                onChange: handleChange,
+                onChange: handleFormChange,
                 inputClassName: 'login-input',
                 errorClassName: 'login-error-text'
             }}

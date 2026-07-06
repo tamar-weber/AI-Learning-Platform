@@ -1,34 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/api';
 import '../styles/myCoursesPage.css';
+import useCourseSearch from '../hooks/useCourseSearch';
+import CourseMetaDetails from './CourseMetaDetails';
+import PaginationControls from './common/PaginationControls';
+import CourseSearchControls from './CourseSearchControls';
+import useCoursesList from '../hooks/useCoursesList';
+import { COURSES_PAGE_LIMIT } from '../utils/courseConstants';
+import { getCoursesLoadErrorMessage, getCoursePurchaseErrorMessage } from '../utils/courseApiErrors';
 
 function MyCoursesPage({ currentUser }) {
     const [myCourses, setMyCourses] = useState([]);
-    const [allCourses, setAllCourses] = useState([]);
-    const [searchInput, setSearchInput] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchBy, setSearchBy] = useState('courseName');
-    const [coursesPage, setCoursesPage] = useState(1);
-    const [coursesPagination, setCoursesPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
-    const [isLoading, setIsLoading] = useState(true);
     const [isPurchasing, setIsPurchasing] = useState('');
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-
-    const loadAvailableCourses = async ({ page = coursesPage, search = searchTerm, selectedSearchBy = searchBy } = {}) => {
-        const response = await api.get('/courses', {
-            params: {
-                page,
-                limit: 8,
-                search,
-                searchBy: selectedSearchBy,
-                onlyActive: true
-            }
-        });
-
-        setAllCourses(response.data.items || []);
-        setCoursesPagination(response.data.pagination || { page, limit: 8, total: 0, totalPages: 1 });
-    };
+    const {
+        courses: allCourses,
+        pagination: coursesPagination,
+        isLoading,
+        setIsLoading,
+        loadCourses: loadAvailableCourses
+    } = useCoursesList({ onlyActive: true, limit: COURSES_PAGE_LIMIT });
+    const {
+        searchInput,
+        searchTerm,
+        searchBy,
+        page: coursesPage,
+        setPage: setCoursesPage,
+        handleSearchInputChange,
+        handleSearchByChange
+    } = useCourseSearch({ initialSearchBy: 'courseName', debounceMs: 400 });
 
     const loadData = async () => {
         if (!currentUser?._id) {
@@ -42,7 +43,7 @@ function MyCoursesPage({ currentUser }) {
             setMyCourses(myCoursesResponse.data);
         } catch (err) {
             console.error('שגיאה בטעינת קורסים:', err);
-            setError('לא ניתן היה לטעון את הקורסים כרגע.');
+            setError(getCoursesLoadErrorMessage(err, 'לא ניתן היה לטעון את הקורסים כרגע.'));
         } finally {
             setIsLoading(false);
         }
@@ -53,26 +54,20 @@ function MyCoursesPage({ currentUser }) {
     }, [currentUser]);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setSearchTerm(searchInput);
-            setCoursesPage(1);
-        }, 400);
-
-        return () => clearTimeout(timeoutId);
-    }, [searchInput]);
-
-    useEffect(() => {
         if (!currentUser?._id) {
             return;
         }
 
         const loadFilteredCourses = async () => {
-            try {
-                await loadAvailableCourses({ page: coursesPage, search: searchTerm, selectedSearchBy: searchBy });
-            } catch (err) {
-                console.error('שגיאה בטעינת קורסים זמינים:', err);
-                setError('לא ניתן היה לטעון את הקורסים הזמינים כרגע.');
-            }
+            await loadAvailableCourses({
+                page: coursesPage,
+                search: searchTerm,
+                searchBy,
+                onError: (err) => {
+                    console.error('שגיאה בטעינת קורסים זמינים:', err);
+                    setError(getCoursesLoadErrorMessage(err, 'לא ניתן היה לטעון את הקורסים הזמינים כרגע.'));
+                }
+            });
         };
 
         loadFilteredCourses();
@@ -104,21 +99,10 @@ function MyCoursesPage({ currentUser }) {
             window.location.href = response.data.checkoutUrl;
         } catch (err) {
             console.error('שגיאה ברכישת קורס:', err);
-            setError(err.response?.data?.error || 'לא ניתן היה לרכוש את הקורס.');
+            setError(getCoursePurchaseErrorMessage(err));
         } finally {
             setIsPurchasing('');
         }
-    };
-
-    const handleSearchInputChange = (event) => {
-        setSearchInput(event.target.value);
-    };
-
-    const handleSearchByChange = (event) => {
-        setSearchBy(event.target.value);
-        setSearchInput('');
-        setSearchTerm('');
-        setCoursesPage(1);
     };
 
     const handlePreviousAvailablePage = () => {
@@ -172,26 +156,15 @@ function MyCoursesPage({ currentUser }) {
             <section className="my-courses-section">
                 <h2 className="my-courses-section-title">חיפוש קורסים זמינים</h2>
 
-                <div className="my-courses-filters">
-                    <input
-                        type="search"
-                        className="my-courses-search-input"
-                        value={searchInput}
-                        onChange={handleSearchInputChange}
-                        placeholder={
-                            searchBy === 'courseName'
-                                ? 'הקלד שם קורס'
-                                : searchBy === 'category'
-                                    ? 'הקלד קטגוריה'
-                                    : 'הקלד שם מרצה'
-                        }
-                    />
-                     <select className="my-courses-filter-select" value={searchBy} onChange={handleSearchByChange}>
-                        <option value="courseName">חיפוש לפי שם קורס</option>
-                        <option value="category">חיפוש לפי קטגוריה</option>
-                        <option value="lecturerName">חיפוש לפי מרצה</option>
-                    </select>
-                </div>
+                <CourseSearchControls
+                    wrapperClassName="my-courses-filters"
+                    inputClassName="my-courses-search-input"
+                    selectClassName="my-courses-filter-select"
+                    searchInput={searchInput}
+                    searchBy={searchBy}
+                    onSearchInputChange={handleSearchInputChange}
+                    onSearchByChange={handleSearchByChange}
+                />
             </section>
 
             <section className="my-courses-section">
@@ -204,14 +177,7 @@ function MyCoursesPage({ currentUser }) {
                         {availableCourses.map((course) => (
                             <article key={course.id} className="my-courses-card">
                                 <h3>{course.courseName}</h3>
-                                <p><strong>מרצה:</strong> {course.lecturerName}</p>
-                                <p><strong>תיאור:</strong> {course.courseDescription || '-'}</p>
-                                <p><strong>קטגוריה:</strong> {course.category || '-'}</p>
-                                <p><strong>מספר שיעורים:</strong> {course.lessonsCount ?? '-'}</p>
-                                <p><strong>תאריך פתיחת קורס:</strong> {course.courseStartDate ? new Date(course.courseStartDate).toLocaleDateString('he-IL') : '-'}</p>
-                                <p><strong>סגירת הרשמה:</strong> {course.enrollmentCloseDate ? new Date(course.enrollmentCloseDate).toLocaleDateString('he-IL') : '-'}</p>
-                                <p><strong>סטטוס הרשמה:</strong> {course.enrollmentStatus === 'active' ? 'פעיל' : 'לא פעיל'}</p>
-                                <p><strong>מחיר:</strong> ₪{Number(course.coursePrice).toLocaleString('he-IL')}</p>
+                                <CourseMetaDetails course={course} showDescription />
                                 <button
                                     type="button"
                                     className="my-courses-buy-button"
@@ -236,38 +202,22 @@ function MyCoursesPage({ currentUser }) {
                         {myCourses.map((course) => (
                             <article key={course.id} className="my-courses-card">
                                 <h3>{course.courseName}</h3>
-                                <p><strong>מרצה:</strong> {course.lecturerName}</p>
-                                <p><strong>קטגוריה:</strong> {course.category || '-'}</p>
-                                <p><strong>מספר שיעורים:</strong> {course.lessonsCount ?? '-'}</p>
-                                <p><strong>תאריך פתיחת קורס:</strong> {course.courseStartDate ? new Date(course.courseStartDate).toLocaleDateString('he-IL') : '-'}</p>
-                                <p><strong>סגירת הרשמה:</strong> {course.enrollmentCloseDate ? new Date(course.enrollmentCloseDate).toLocaleDateString('he-IL') : '-'}</p>
-                                <p><strong>סטטוס הרשמה:</strong> {course.enrollmentStatus === 'active' ? 'פעיל' : 'לא פעיל'}</p>
-                                <p><strong>מחיר:</strong> ₪{Number(course.coursePrice).toLocaleString('he-IL')}</p>
-                                <p><strong>נרכש בתאריך:</strong> {course.purchasedAt ? new Date(course.purchasedAt).toLocaleDateString('he-IL') : '-'}</p>
+                                <CourseMetaDetails course={course} showPurchasedAt />
                             </article>
                         ))}
                     </div>
                 )}
 
-                <div className="my-courses-pagination">
-                    <button
-                        type="button"
-                        className="my-courses-buy-button"
-                        onClick={handlePreviousAvailablePage}
-                        disabled={coursesPage <= 1}
-                    >
-                        הקודם
-                    </button>
-                    <span>{coursesPagination.page} / {coursesPagination.totalPages}</span>
-                    <button
-                        type="button"
-                        className="my-courses-buy-button"
-                        onClick={handleNextAvailablePage}
-                        disabled={coursesPage >= (coursesPagination.totalPages || 1)}
-                    >
-                        הבא
-                    </button>
-                </div>
+                <PaginationControls
+                    wrapperClassName="my-courses-pagination"
+                    buttonClassName="my-courses-buy-button"
+                    currentPage={coursesPagination.page}
+                    totalPages={coursesPagination.totalPages}
+                    onPrevious={handlePreviousAvailablePage}
+                    onNext={handleNextAvailablePage}
+                    isPreviousDisabled={coursesPage <= 1}
+                    isNextDisabled={coursesPage >= (coursesPagination.totalPages || 1)}
+                />
             </section>
         </div>
     );

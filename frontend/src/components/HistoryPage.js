@@ -31,8 +31,6 @@ function HistoryPage({ currentUser }) {
             } catch (err) {
                 console.error("שגיאה בטעינת היסטוריה:", err);
                 setError('לא ניתן היה לטעון את היסטוריית הלמידה.');
-            } finally {
-                setIsLoading(false);
             }
         };
 
@@ -43,14 +41,21 @@ function HistoryPage({ currentUser }) {
             } catch (err) {
                 console.error('שגיאה בקבלת משתמש:', err);
                 setError('לא ניתן היה לטעון את פרטי המשתמש.');
-            } finally {
-                setIsLoading(false);
             }
         };
-        fetchHistory();
-        if (userId && currentUser?.role === 'admin') {
-            fetchUser()
-        }
+
+        const loadPageData = async () => {
+            setIsLoading(true);
+
+            await Promise.all([
+                fetchHistory(),
+                userId && currentUser?.role === 'admin' ? fetchUser() : Promise.resolve()
+            ]);
+
+            setIsLoading(false);
+        };
+
+        loadPageData();
 
     }, [userId, currentUser, navigate]);
 
