@@ -10,7 +10,6 @@ export function validateIdNumber(idNumber) {
         return false;
     }
 
-    // Reject obviously fake values like 000000000, 111111111, ...
     if (/^(\d)\1{8}$/.test(digitsOnly)) {
         return false;
     }

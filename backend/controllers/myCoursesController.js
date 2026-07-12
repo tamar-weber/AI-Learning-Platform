@@ -1,44 +1,33 @@
 const myCoursesService = require('../models/myCoursesService');
 const stripeService = require('../models/stripeService');
 const AppError = require('../utils/appError');
+const { config } = require('../config/env');
+const asyncHandler = require('../utils/asyncHandler');
 
-async function purchaseCourse(req, res, next) {
-    try {
-        throw new AppError('הרשמה ישירה בוטלה. יש לבצע רכישה דרך Stripe Checkout בלבד.', 400);
-    } catch (error) {
-        next(error);
-    }
+async function purchaseCourse() {
+    throw new AppError('הרשמה ישירה בוטלה. יש לבצע רכישה דרך Stripe Checkout בלבד.', 400);
 }
 
-async function getMyCourses(req, res, next) {
-    try {
-        const courses = await myCoursesService.getPurchasedCourses(req.params.userId);
-        res.json(courses);
-    } catch (error) {
-        next(error);
-    }
+async function getMyCourses(req, res) {
+    const courses = await myCoursesService.getPurchasedCourses(req.params.userId);
+    res.json(courses);
 }
 
-async function createCheckoutSession(req, res, next) {
-    try {
-        const { courseId } = req.body;
-        const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+async function createCheckoutSession(req, res) {
+    const { courseId } = req.body;
 
-        const data = await stripeService.createCheckoutSession({
-            userId: req.user._id,
-            courseId,
-            successUrl: `${frontendBaseUrl}/my-courses?payment=success`,
-            cancelUrl: `${frontendBaseUrl}/my-courses?payment=cancel`
-        });
+    const data = await stripeService.createCheckoutSession({
+        userId: req.user._id,
+        courseId,
+        successUrl: `${config.frontendUrl}/my-courses?payment=success`,
+        cancelUrl: `${config.frontendUrl}/my-courses?payment=cancel`
+    });
 
-        res.status(201).json(data);
-    } catch (error) {
-        next(error);
-    }
+    res.status(201).json(data);
 }
 
 module.exports = {
-    purchaseCourse,
-    getMyCourses,
-    createCheckoutSession
+    purchaseCourse: asyncHandler(purchaseCourse),
+    getMyCourses: asyncHandler(getMyCourses),
+    createCheckoutSession: asyncHandler(createCheckoutSession)
 };

@@ -14,7 +14,6 @@ function getArgValue(flag, fallback) {
 async function setAdminRole() {
   try {
     await connectDB();
-    console.log('✅ Connected to MongoDB');
 
     const name = getArgValue('--name', process.env.ADMIN_NAME || 'תמר המנהלת');
     const idNumber = getArgValue('--idNumber', process.env.ADMIN_ID_NUMBER || '111111111');
@@ -36,7 +35,6 @@ async function setAdminRole() {
       user.phone = phone;
       user.password = hashedPassword;
       await user.save();
-      console.log('✅ עדכון משתמש קיים ל-admin:', user.name);
       return;
     }
 
@@ -50,9 +48,7 @@ async function setAdminRole() {
     });
 
     await user.save();
-    console.log('✅ נוצר משתמש מנהל חדש:', user.name);
   } catch (error) {
-    console.error('❌ שגיאה:', error.message);
     process.exit(1);
   } finally {
     await mongoose.disconnect();

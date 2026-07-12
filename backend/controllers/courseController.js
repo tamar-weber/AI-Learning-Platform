@@ -6,11 +6,6 @@ async function createCourse(req, res, next) {
     try {
         const course = await courseService.createCourse(req.body);
         ragService.syncCourse(course.id).catch((error) => console.error('Failed to sync course to RAG:', error.message));
-        console.log('✅ Course created successfully:', {
-            id: course.id,
-            courseName: course.courseName,
-            lecturerName: course.lecturerName
-        });
         res.status(201).json(course);
     } catch (error) {
         next(error);
@@ -39,11 +34,6 @@ async function updateCourse(req, res, next) {
     try {
         const course = await courseService.updateCourse(req.params.courseId, req.body);
         ragService.syncCourse(course.id).catch((error) => console.error('Failed to sync course to RAG:', error.message));
-        console.log('✅ Course updated successfully:', {
-            id: course.id,
-            courseName: course.courseName,
-            lecturerName: course.lecturerName
-        });
         res.json(course);
     } catch (error) {
         next(error);

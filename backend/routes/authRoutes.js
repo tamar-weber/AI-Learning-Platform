@@ -2,15 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser, requestPasswordReset, resetPassword, updateProfile } = require('../models/authService');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { authLimiter } = require('../middleware/rateLimiter');
 
-router.post('/register', async (req, res, next) => {
+router.post('/register', authLimiter, async (req, res, next) => {
     try {
-        console.log('DEBUG register body:', {
-            name: req.body.name,
-            email: req.body.email,
-            hasPassword: Boolean(req.body.password),
-            passwordLength: req.body.password ? req.body.password.length : 0
-        });
         const newUser = await registerUser(req.body);
         res.status(201).json(newUser);
     } catch (error) {
@@ -18,7 +13,7 @@ router.post('/register', async (req, res, next) => {
     }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', authLimiter, async (req, res, next) => {
     try {
         const user = await loginUser(req.body);
         res.json(user);

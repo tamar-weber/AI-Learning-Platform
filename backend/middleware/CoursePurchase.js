@@ -29,7 +29,7 @@ const CoursePurchaseSchema = new mongoose.Schema(
         },
         stripeSessionId: {
             type: String,
-            sparse: true
+            // sparse: true
         },
         stripePaymentIntentId: {
             type: String,

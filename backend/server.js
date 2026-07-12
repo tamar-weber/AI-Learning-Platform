@@ -5,7 +5,7 @@ connectDB();
 const express = require('express');
 const cors = require('cors');
 const lessonController = require('./controllers/lessonController');
-
+const helmet = require('helmet');
 const historyRoutes = require('./routes/historyRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const adminMessagingRoutes = require('./routes/adminMessagingRoutes');
@@ -28,6 +28,7 @@ const PORT = process.env.PORT || 8000;
 
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), stripeWebhookRoutes);
 
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: true, credentials: true }));
@@ -51,7 +52,7 @@ app.post('/api/generate-lesson', lessonController.generateLesson);
 
 
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     console.error('❌ שגיאה כללית:', err);
 
     const statusCode = err.statusCode || 500;

@@ -1,31 +1,8 @@
-const mongoose = require('mongoose');
 const Course = require('../middleware/Course');
 const CoursePurchase = require('../middleware/CoursePurchase');
 const AppError = require('../utils/appError');
 const { createNotification } = require('./notificationService');
-
-function isValidObjectId(value) {
-    return mongoose.Types.ObjectId.isValid(value);
-}
-
-function startOfToday() {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-async function syncExpiredCoursesStatus() {
-    const today = startOfToday();
-
-    await Course.updateMany(
-        {
-            enrollmentStatus: 'active',
-            enrollmentCloseDate: { $lt: today }
-        },
-        {
-            $set: { enrollmentStatus: 'inactive' }
-        }
-    );
-}
+const { isValidObjectId, startOfToday, syncExpiredCoursesStatus } = require('../utils/courseHelpers');
 
 function mapCourse(courseDoc, purchasedAt = null) {
     if (!courseDoc) {
