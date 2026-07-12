@@ -48,19 +48,14 @@ function LoginPage() {
         setIsLoading(true);
 
         try {
-            console.log('🔄 מנסה להתחבר לשרת...', { email: formData.email });
 
             const response = await api.post('/login', formData);
 
-            console.log('✅ התחברות הצליחה:', response.data);
-
-           
             login(response.data);
 
             navigate('/learning', { replace: true });
 
         } catch (err) {
-            console.error('❌ שגיאה בהתחברות:', err);
             setErrors({ general: getAuthErrorMessage(err, 'שגיאה בהתחברות. בדוק את הפרטים ונסה שוב.') });
         } finally {
             setIsLoading(false);

@@ -72,11 +72,8 @@ function RegisterPage() {
         setIsLoading(true);
 
         try {
-            console.log('🔄 מנסה לשלוח בקשה לשרת...', formData);
             
             const response = await api.post('/register', formData);
-            
-            console.log('✅ הרשמה הצליחה:', response.data);
             setSuccess(`שלום ${response.data.name}! נרשמת בהצלחה למערכת!`);
             
             // שמירת פרטי המשתמש ב-localStorage
@@ -88,7 +85,6 @@ function RegisterPage() {
             }, 2000);
 
         } catch (err) {
-            console.error('❌ שגיאה ברישום:', err);
 
             setErrors({ general: getAuthErrorMessage(err, 'אופס, לא הצלחנו לרשום אותך. נסה שוב.') });
         } finally {

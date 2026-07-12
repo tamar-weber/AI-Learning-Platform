@@ -7,6 +7,7 @@ const AppError = require('../utils/appError');
 const { createNotification } = require('./notificationService');
 const { sendEnrollmentConfirmationEmail } = require('./emailService');
 const { logActivity } = require('./userActivityService');
+const { config } = require('../config/env');
 
 function getStripeClient() {
     const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -154,7 +155,7 @@ async function handleCheckoutSessionCompleted(session) {
         to: user.email,
         userName: user.name,
         courseName: course.courseName,
-        courseLink: `${process.env.FRONTEND_BASE_URL || 'http://localhost:3000'}/my-courses`
+        courseLink: `${config.frontendUrl}/my-courses`
     }).catch((error) => {
         console.error('Failed to send enrollment confirmation email:', error.message);
     });

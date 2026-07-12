@@ -127,11 +127,9 @@ function CoursesPage() {
         try {
             if (editingCourseId) {
                 const updateResponse = await api.patch(`/courses/${editingCourseId}`, payload);
-                console.log('✅ הקורס עודכן בהצלחה:', updateResponse.data);
                 setSuccessMessage(`הקורס "${updateResponse.data.courseName}" עודכן בהצלחה.`);
             } else {
                 const createResponse = await api.post('/courses', payload);
-                console.log('✅ הקורס נוצר בהצלחה:', createResponse.data);
                 setSuccessMessage(`הקורס "${createResponse.data.courseName}" נוסף בהצלחה.`);
             }
 

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const User = require('../middleware/User');
 const Course = require('../middleware/Course');
 const CoursePurchase = require('../middleware/CoursePurchase');
@@ -9,9 +9,9 @@ const AppError = require('../utils/appError');
 const dashboardCache = new Map();
 const DASHBOARD_CACHE_TTL_MS = 60 * 1000;
 
-function toObjectId(value) {
-    return new mongoose.Types.ObjectId(value);
-}
+// function toObjectId(value) {
+//     return new mongoose.Types.ObjectId(value);
+// }
 
 function normalizeDateRange({ from, to }) {
     const startDate = from ? new Date(from) : null;

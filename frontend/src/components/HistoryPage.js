@@ -22,8 +22,6 @@ function HistoryPage({ currentUser }) {
 
         const fetchHistory = async () => {
             try {
-                // ✅ לוג של ה־userId שנשלח לשרת
-                console.log("userId שנשלח:", targetUserId);
 
                 const response = await api.get(`/history/user/${targetUserId}`);
                 setHistory(response.data);

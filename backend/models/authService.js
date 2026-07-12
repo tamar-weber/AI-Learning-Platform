@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { sendWelcomeEmail, sendPasswordResetEmail } = require('./emailService');
 const { logActivity } = require('./userActivityService');
+const { config } = require('../config/env');
 
 const SALT_ROUNDS = 10;
 const RESET_TOKEN_BYTES = 32;
@@ -80,8 +81,6 @@ async function registerUser(userData) {
             console.error('Failed to send welcome email:', error.message);
         });
 
-    console.log('DEBUG saved user fields:', Object.keys(newUser.toObject()));
-
     const userObject = newUser.toObject();
     delete userObject.password;
 
@@ -124,8 +123,7 @@ function hashResetToken(rawToken) {
 }
 
 function buildResetLink(rawToken) {
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    return `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
+    return `${config.frontendUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
 }
 
 function applyResetRateLimit(user) {

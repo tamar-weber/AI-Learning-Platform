@@ -1,10 +1,6 @@
-const mongoose = require('mongoose');
 const Course = require('../middleware/Course');
 const AppError = require('../utils/appError');
-
-function isValidObjectId(value) {
-    return mongoose.Types.ObjectId.isValid(value);
-}
+const { isValidObjectId, startOfToday, syncExpiredCoursesStatus } = require('../utils/courseHelpers');
 
 function normalizeStatus(value) {
     if (!value) {
@@ -117,11 +113,6 @@ function normalizeBoolean(value) {
     return false;
 }
 
-function startOfToday() {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
 function getAutoEnrollmentStatus(courseStartDate, enrollmentCloseDate) {
     if (!enrollmentCloseDate || Number.isNaN(new Date(enrollmentCloseDate).getTime())) {
         return undefined;
@@ -159,20 +150,6 @@ function validateCourseDates(courseStartDate, enrollmentCloseDate) {
     if (enrollmentCloseDate >= courseStartDate) {
         throw new AppError('תאריך סגירת הרשמה חייב להיות לפני תאריך פתיחת הקורס', 400);
     }
-}
-
-async function syncExpiredCoursesStatus() {
-    const today = startOfToday();
-
-    await Course.updateMany(
-        {
-            enrollmentStatus: 'active',
-            enrollmentCloseDate: { $lt: today }
-        },
-        {
-            $set: { enrollmentStatus: 'inactive' }
-        }
-    );
 }
 
 async function createCourse(courseData) {
@@ -361,9 +338,6 @@ async function updateCourse(courseId, updates) {
         updatePayload.currentEnrollment = normalizedCurrentEnrollment;
     }
 
-    let effectiveStartDateForValidation;
-    let effectiveCloseDateForValidation;
-
     if (updates.courseStartDate !== undefined) {
         const normalizedStartDate = new Date(updates.courseStartDate);
 
@@ -404,8 +378,8 @@ async function updateCourse(courseId, updates) {
         throw new AppError('הקורס לא נמצא', 404);
     }
 
-    effectiveStartDateForValidation = updatePayload.courseStartDate || existingCourse.courseStartDate;
-    effectiveCloseDateForValidation = updatePayload.enrollmentCloseDate || existingCourse.enrollmentCloseDate;
+    const effectiveStartDateForValidation = updatePayload.courseStartDate || existingCourse.courseStartDate;
+    const effectiveCloseDateForValidation = updatePayload.enrollmentCloseDate || existingCourse.enrollmentCloseDate;
 
     validateCourseDates(new Date(effectiveStartDateForValidation), new Date(effectiveCloseDateForValidation));
 
