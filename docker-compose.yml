@@ -1,15 +1,30 @@
 version: '3.8'
+
 services:
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: myuser       # את יכולה לשנות את זה
-      POSTGRES_PASSWORD: mypassword # ואת זה
-      POSTGRES_DB: learning_platform
+  mongo:
+    image: mongo:7
+    container_name: ai-learning-mongo
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - '27017:27017'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: ai-learning-backend
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    env_file:
+      - ./backend/.env
+    environment:
+      # Overrides .env so the backend reaches the "mongo" container by name,
+      # instead of localhost, when running inside Docker.
+      - MONGODB_URI=mongodb://mongo:27017/ai-learning-platform
+    depends_on:
+      - mongo
 
 volumes:
-  postgres_data:
+  mongo-data:
