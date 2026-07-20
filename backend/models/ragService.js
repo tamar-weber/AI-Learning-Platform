@@ -617,6 +617,31 @@ async function buildKnowledgeBundle({ userId, query }) {
         };
     }
 
+    if (!getOpenAIClient()) {
+      
+        const courses = await courseService.getAllCourses({ limit: 0, page: 1 });
+        const courseItems = courses.items || [];
+        const topCoursesByPrice = [...courseItems].sort((left, right) => getCoursePrice(left) - getCoursePrice(right)).slice(0, 3);
+        const topCoursesByRelevance = courseItems.filter((course) => {
+            const haystack = [course.courseName, course.category, course.courseDescription, course.lecturerName].filter(Boolean).join(' ');
+            return keywordOverlapScore(query, haystack) > 0;
+        }).slice(0, 5);
+
+        return {
+            answer: '',
+            sources: [],
+            fallback: false,
+            score: 0,
+            intent: normalizeQueryIntent(query),
+            fromDb: false,
+            queryEmbedding: null,
+            matches: [],
+            topCoursesByPrice,
+            topCoursesByRelevance,
+            courseCount: courseItems.length
+        };
+    }
+
     const queryEmbedding = await getEmbedding(query);
     const matches = await similaritySearch(queryEmbedding, query, 8);
     const topMatch = matches[0];
@@ -1333,6 +1358,11 @@ async function answerQuery({ userId, query }) {
 }
 
 async function bootstrapKnowledgeBase() {
+    if (!getOpenAIClient()) {
+        console.log('ℹ️  OPENAI_API_KEY not set - skipping RAG document seeding (chat will use fallback responses).');
+        return;
+    }
+
     await Promise.allSettled([
         seedStaticDocuments(),
         seedCatalogDocuments(),

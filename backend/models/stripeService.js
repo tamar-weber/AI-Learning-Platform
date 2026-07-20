@@ -51,6 +51,33 @@ async function createCheckoutSession({ userId, courseId, successUrl, cancelUrl }
         throw new AppError('הקורס כבר נרכש על ידי המשתמש', 400);
     }
 
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+
+    // Local/dev fake-payment mode: when no Stripe key is configured (and we're
+    // not in production), simulate an instantly-successful payment by calling
+    // the exact same completion handler the real webhook uses - so enrollment
+    // creation, idempotency, notifications and emails all behave identically.
+    // This branch can never trigger in production, since STRIPE_SECRET_KEY is
+    // a required env var there (see config/env.js).
+    if (!secretKey && config.nodeEnv !== 'production') {
+        const fakeSessionId = `fake_local_${userId}_${courseId}_${Date.now()}`;
+
+        await handleCheckoutSessionCompleted({
+            id: fakeSessionId,
+            payment_intent: `fake_local_pi_${fakeSessionId}`,
+            metadata: {
+                userId: String(user._id),
+                courseId: String(course._id)
+            }
+        });
+
+        return {
+            checkoutUrl: successUrl,
+            sessionId: fakeSessionId,
+            localFakePayment: true
+        };
+    }
+
     const stripe = getStripeClient();
     const amountInCents = Math.round(Number(course.coursePrice || 0) * 100);
 
